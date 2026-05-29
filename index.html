@@ -8,7 +8,7 @@
     <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -43,18 +43,31 @@
 
     <style>
         body { 
-            background-color: #f8fafc;
+            background-color: #f1f5f9;
             background-image: radial-gradient(at 0% 0%, hsla(217,100%,94%,1) 0px, transparent 50%),
                               radial-gradient(at 100% 0%, hsla(253,100%,94%,1) 0px, transparent 50%);
             background-attachment: fixed;
             color: #0f172a;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        #root {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .glass-panel {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05);
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
         }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -75,7 +88,7 @@
     <script type="text/babel">
         const { useState, useRef, useEffect } = React;
 
-        const defaultApiKey = "AIzaSyBEyhGHnkHK4p3ciSLG9VUowrncmk8LlJU"; // API Key Default
+        const defaultApiKey = "AIzaSyBEyhGHnkHK4p3ciSLG9VUowrncmk8LlJU";
         
         const defaultStudents = [
           { nisn: '3186088743', name: 'ATHA ZAFRAN RAMADHAN', jk: 'L' },
@@ -103,6 +116,7 @@
 
         const Icons = {
             Sparkles: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>,
+            Home: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
             School: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 22v-4a2 2 0 1 0-4 0v4"/><path d="m18 10 4 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8l4-2"/><path d="M18 5v17"/><path d="m4 6 8-4 8 4"/><path d="M6 5v17"/><circle cx="12" cy="9" r="2"/></svg>,
             Image: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>,
             Database: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>,
@@ -123,41 +137,51 @@
             Save: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>,
             FolderUp: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-1.22-1.8A2 2 0 0 0 7.53 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/><path d="M12 10v6"/><path d="m9 13 3-3 3 3"/></svg>,
             Eye: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>,
-            FileDown: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>
+            FileDown: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>,
+            Monitor: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>,
+            Tablet: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><line x1="12" x2="12.01" y1="18" y2="18"/></svg>,
+            Smartphone: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>,
+            Palette: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
         };
 
         function App() {
-            // Settings & Tabs
             const [apiKey, setApiKey] = useState(defaultApiKey);
             const [isSettingsOpen, setIsSettingsOpen] = useState(false);
             const [tempApiKey, setTempApiKey] = useState('');
-            const [activeTab, setActiveTab] = useState('koreksi'); // 'koreksi', 'database', 'daftarnilai'
+            const [activeTab, setActiveTab] = useState('beranda'); 
+            const [viewMode, setViewMode] = useState('desktop'); // 'desktop', 'tablet', 'mobile'
 
-            // School & Student Data
-            const [schoolInfo, setSchoolInfo] = useState({ name: 'SD Negeri 1 Gerduren', year: '2025/2026', grade: '1' });
+            const [schoolInfo, setSchoolInfo] = useState({ 
+                name: 'SD Negeri 1 Gerduren', 
+                year: '2025/2026', 
+                grade: '1',
+                teacherName: 'Bpk. Guru',
+                logo: '',
+                background: ''
+            });
+
             const [students, setStudents] = useState(defaultStudents);
             const [newStudent, setNewStudent] = useState({ nisn: '', name: '', jk: 'L' });
 
-            // Grading State
             const [subject, setSubject] = useState('PPKn');
             const [selectedStudentNisn, setSelectedStudentNisn] = useState('');
-            const [answerKeys, setAnswerKeys] = useState({}); // Terkunci per mapel
+            const [answerKeys, setAnswerKeys] = useState({}); 
             const [imagePreview, setImagePreview] = useState(null);
             const [base64Image, setBase64Image] = useState(null);
             const [mimeType, setMimeType] = useState(null);
             
-            // Process State
             const [loading, setLoading] = useState(false);
             const [result, setResult] = useState(null);
             const [error, setError] = useState(null);
             const [records, setRecords] = useState([]);
             
-            // Report & Filter State
             const [reportSubject, setReportSubject] = useState('Semua');
-            const [selectedRecord, setSelectedRecord] = useState(null); // State untuk detail popup
+            const [selectedRecord, setSelectedRecord] = useState(null); 
             
             const fileInputRef = useRef(null);
             const restoreInputRef = useRef(null);
+            const logoInputRef = useRef(null);
+            const bgInputRef = useRef(null);
 
             useEffect(() => {
                 const savedKey = localStorage.getItem('geminiApiKey');
@@ -168,7 +192,7 @@
                 const keyToSave = tempApiKey.trim() || defaultApiKey;
                 localStorage.setItem('geminiApiKey', keyToSave);
                 setApiKey(keyToSave);
-                alert("API Key berhasil disimpan!");
+                alert("Kunci API berhasil disimpan!");
             };
 
             const openSettings = () => {
@@ -189,7 +213,7 @@
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.setAttribute('download', `Backup_EduGrader_${schoolInfo.name.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.json`);
+                link.setAttribute('download', `Backup_EduGrader_${schoolInfo.name.replace(/\s+/g, '_')}.json`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -215,6 +239,16 @@
                 };
                 reader.readAsText(file);
                 e.target.value = null; 
+            };
+
+            const handleFileUpload = (e, targetField) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setSchoolInfo(prev => ({...prev, [targetField]: reader.result}));
+                };
+                reader.readAsDataURL(file);
             };
 
             const handleImageUpload = (e) => {
@@ -258,7 +292,6 @@
                 document.body.removeChild(link);
             };
 
-            // Fungsi untuk mengunduh laporan detail per siswa ke dalam format Word/Doc
             const downloadStudentDoc = (record) => {
                 const htmlContent = `
                     <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
@@ -298,8 +331,8 @@
                             <tr>
                                 <td style="width: 60%;"></td>
                                 <td style="text-align: center;">
-                                    Mengetahui,<br/>Guru Mata Pelajaran<br/><br/><br/><br/>
-                                    ________________________
+                                    Mengetahui,<br/>Guru Kelas<br/><br/><br/><br/>
+                                    <b>${schoolInfo.teacherName || '________________________'}</b>
                                 </td>
                             </tr>
                         </table>
@@ -361,7 +394,6 @@ Setelah itu, berikan laporan mendetail dengan format berikut (gunakan markdown u
                         const score = scoreMatch ? parseInt(scoreMatch[1], 10) : 'N/A';
                         const selectedStudent = students.find(s => s.nisn === selectedStudentNisn);
                         
-                        // Simpan seluruh textResponse ke dalam aiAnalysis agar bisa dilihat nanti
                         setRecords(prev => [{
                             id: Date.now(),
                             studentName: selectedStudent?.name || 'Unknown',
@@ -390,53 +422,130 @@ Setelah itu, berikan laporan mendetail dengan format berikut (gunakan markdown u
                 return { __html: formatted };
             };
 
+            // Logic to simulate Desktop / Tablet / Mobile View Modes
+            const getContainerClass = () => {
+                if (viewMode === 'mobile') {
+                    return "w-full max-w-[414px] h-[850px] max-h-[95vh] bg-white border-[12px] border-slate-900 rounded-[3rem] shadow-2xl overflow-hidden flex flex-col relative mx-auto transition-all duration-500 my-4";
+                }
+                if (viewMode === 'tablet') {
+                    return "w-full max-w-[834px] h-[1000px] max-h-[95vh] bg-white border-[16px] border-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col relative mx-auto transition-all duration-500 my-4";
+                }
+                return "w-full min-h-screen bg-slate-50/50 flex flex-col transition-all duration-500";
+            }
+
             return (
-                <div className="min-h-screen pb-20">
+                <div className={getContainerClass()}>
                     
                     {/* Glass Navbar */}
-                    <nav className="sticky top-0 z-40 bg-white/70 backdrop-blur-xl border-b border-slate-200/60 shadow-sm">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                            <div className="flex flex-col md:flex-row items-center justify-between py-4 gap-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
-                                        <Icons.Sparkles />
+                    <nav className="sticky top-0 z-40 bg-white/75 backdrop-blur-xl border-b border-slate-200/60 shadow-sm shrink-0">
+                        <div className="w-full px-4 sm:px-6 lg:px-8 mx-auto">
+                            <div className="flex flex-col sm:flex-row items-center justify-between py-3 gap-3">
+                                <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('beranda')}>
+                                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                                            <Icons.Sparkles />
+                                        </div>
+                                        <div>
+                                            <h1 className="text-xl font-extrabold text-slate-900 tracking-tight leading-tight">EduGrader AI</h1>
+                                            <p className="text-[10px] font-bold text-slate-500 flex items-center gap-1 uppercase tracking-wider">
+                                                {schoolInfo.name}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">EduGrader AI</h1>
-                                        <p className="text-[11px] font-medium text-slate-500 flex items-center gap-1 uppercase tracking-wider">
-                                            {schoolInfo.name} • Kls {schoolInfo.grade}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/50 w-full md:w-auto overflow-x-auto custom-scrollbar">
-                                    <button onClick={() => setActiveTab('koreksi')} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 whitespace-nowrap ${activeTab === 'koreksi' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}>
-                                        <Icons.Image /> Koreksi Ujian
-                                    </button>
-                                    <button onClick={() => setActiveTab('database')} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 whitespace-nowrap ${activeTab === 'database' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}>
-                                        <Icons.Database /> Database Siswa
-                                    </button>
-                                    <button onClick={() => setActiveTab('daftarnilai')} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 whitespace-nowrap ${activeTab === 'daftarnilai' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}>
-                                        <Icons.Award /> Daftar Nilai
+                                    <button onClick={openSettings} className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors sm:hidden" title="Pengaturan">
+                                        <Icons.Settings />
                                     </button>
                                 </div>
 
-                                <button onClick={openSettings} className="p-2.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors hidden md:block" title="Pengaturan & Backup">
+                                <div className="flex items-center justify-center gap-1.5 bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/50 w-full sm:w-auto overflow-x-auto custom-scrollbar">
+                                    <button onClick={() => setActiveTab('beranda')} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 whitespace-nowrap ${activeTab === 'beranda' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}>
+                                        <Icons.Home /> Beranda
+                                    </button>
+                                    <button onClick={() => setActiveTab('koreksi')} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 whitespace-nowrap ${activeTab === 'koreksi' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}>
+                                        <Icons.Image /> Koreksi
+                                    </button>
+                                    <button onClick={() => setActiveTab('database')} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 whitespace-nowrap ${activeTab === 'database' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}>
+                                        <Icons.Database /> Data Siswa
+                                    </button>
+                                    <button onClick={() => setActiveTab('daftarnilai')} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 whitespace-nowrap ${activeTab === 'daftarnilai' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}>
+                                        <Icons.Award /> Nilai
+                                    </button>
+                                </div>
+
+                                <button onClick={openSettings} className="p-2.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors hidden sm:block" title="Pengaturan & Profil">
                                     <Icons.Settings />
                                 </button>
                             </div>
                         </div>
                     </nav>
 
+                    {/* Content Scrollable Area */}
+                    <div className="flex-1 overflow-y-auto custom-scrollbar relative">
+
                     {/* Modal Popup: Settings & Backup */}
                     {isSettingsOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/30 backdrop-blur-sm fade-in">
-                            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100">
-                                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                                    <h3 className="font-bold text-slate-800 flex items-center gap-2"><Icons.Settings /> Pengaturan Sistem</h3>
-                                    <button onClick={() => setIsSettingsOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors"><Icons.X /></button>
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm fade-in">
+                            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-100">
+                                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                                    <h3 className="font-extrabold text-slate-800 flex items-center gap-2"><Icons.Settings /> Pengaturan Sistem & Tampilan</h3>
+                                    <button onClick={() => setIsSettingsOpen(false)} className="text-slate-400 hover:text-red-500 bg-white rounded-xl p-1 transition-colors shadow-sm"><Icons.X /></button>
                                 </div>
-                                <div className="p-6 space-y-6">
+                                <div className="p-6 overflow-y-auto custom-scrollbar space-y-8 flex-1">
+                                    
+                                    {/* Tampilan Mode */}
+                                    <div className="space-y-4">
+                                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2"><Icons.Monitor /> Simulasi Tampilan Layar</h4>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            <button onClick={() => setViewMode('desktop')} className={`flex flex-col items-center justify-center gap-2 py-4 rounded-2xl font-bold transition-all border ${viewMode === 'desktop' ? 'bg-brand-50 text-brand-600 border-brand-200 shadow-sm' : 'bg-white text-slate-500 hover:bg-slate-50 border-slate-200'}`}>
+                                                <Icons.Monitor /> <span className="text-xs">Standar (PC)</span>
+                                            </button>
+                                            <button onClick={() => setViewMode('tablet')} className={`flex flex-col items-center justify-center gap-2 py-4 rounded-2xl font-bold transition-all border ${viewMode === 'tablet' ? 'bg-brand-50 text-brand-600 border-brand-200 shadow-sm' : 'bg-white text-slate-500 hover:bg-slate-50 border-slate-200'}`}>
+                                                <Icons.Tablet /> <span className="text-xs">Tablet 11"</span>
+                                            </button>
+                                            <button onClick={() => setViewMode('mobile')} className={`flex flex-col items-center justify-center gap-2 py-4 rounded-2xl font-bold transition-all border ${viewMode === 'mobile' ? 'bg-brand-50 text-brand-600 border-brand-200 shadow-sm' : 'bg-white text-slate-500 hover:bg-slate-50 border-slate-200'}`}>
+                                                <Icons.Smartphone /> <span className="text-xs">Mobile</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <hr className="border-slate-100"/>
+
+                                    {/* Profil Sekolah */}
+                                    <div className="space-y-4">
+                                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2"><Icons.School /> Identitas & Visual Beranda</h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div><label className="block text-xs font-bold text-slate-500 mb-1.5">Nama Sekolah</label><input type="text" value={schoolInfo.name} onChange={e => handleSchoolInfoChange(e, 'name')} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none font-semibold text-slate-700"/></div>
+                                            <div><label className="block text-xs font-bold text-slate-500 mb-1.5">Tahun Pelajaran</label><input type="text" value={schoolInfo.year} onChange={e => handleSchoolInfoChange(e, 'year')} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none font-semibold text-slate-700"/></div>
+                                            <div><label className="block text-xs font-bold text-slate-500 mb-1.5">Kelas</label><input type="text" value={schoolInfo.grade} onChange={e => handleSchoolInfoChange(e, 'grade')} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none font-semibold text-slate-700"/></div>
+                                            <div><label className="block text-xs font-bold text-slate-500 mb-1.5">Nama Guru Kelas</label><input type="text" value={schoolInfo.teacherName} onChange={e => handleSchoolInfoChange(e, 'teacherName')} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none font-semibold text-slate-700"/></div>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                            <div className="p-4 border border-slate-200 rounded-2xl bg-white flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden">
+                                                    {schoolInfo.logo ? <img src={schoolInfo.logo} className="w-full h-full object-cover"/> : <Icons.Image className="text-slate-400"/>}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-xs font-bold text-slate-700 mb-1">Logo Sekolah</p>
+                                                    <input type="file" accept="image/*" ref={logoInputRef} onChange={(e) => handleFileUpload(e, 'logo')} className="hidden" />
+                                                    <button onClick={() => logoInputRef.current.click()} className="text-[11px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-colors">Pilih File</button>
+                                                </div>
+                                            </div>
+                                            <div className="p-4 border border-slate-200 rounded-2xl bg-white flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden">
+                                                    {schoolInfo.background ? <img src={schoolInfo.background} className="w-full h-full object-cover"/> : <Icons.Palette className="text-slate-400"/>}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-xs font-bold text-slate-700 mb-1">Foto Latar Beranda</p>
+                                                    <input type="file" accept="image/*" ref={bgInputRef} onChange={(e) => handleFileUpload(e, 'background')} className="hidden" />
+                                                    <button onClick={() => bgInputRef.current.click()} className="text-[11px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-colors">Pilih File</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <hr className="border-slate-100"/>
+
                                     <div className="space-y-4">
                                         <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Konfigurasi AI</h4>
                                         <div>
@@ -446,21 +555,21 @@ Setelah itu, berikan laporan mendetail dengan format berikut (gunakan markdown u
                                                 placeholder="Gunakan key bawaan..." 
                                                 value={tempApiKey} 
                                                 onChange={e => setTempApiKey(e.target.value)}
-                                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-sm"
+                                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none transition-all text-sm"
                                             />
                                         </div>
-                                        <button onClick={saveApiKey} className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-semibold transition-colors">Simpan Kunci API</button>
+                                        <button onClick={saveApiKey} className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold transition-colors">Simpan Kunci API</button>
                                     </div>
                                     <hr className="border-slate-100"/>
                                     <div className="space-y-4">
                                         <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Manajemen Data (Lokal)</h4>
                                         <div className="grid grid-cols-2 gap-3">
-                                            <button onClick={handleBackup} className="flex flex-col items-center justify-center gap-2 py-4 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-2xl font-semibold transition-colors border border-brand-100">
+                                            <button onClick={handleBackup} className="flex flex-col items-center justify-center gap-2 py-4 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-xl font-semibold transition-colors border border-brand-100">
                                                 <Icons.Save />
                                                 <span className="text-xs">Backup Data</span>
                                             </button>
                                             <input type="file" accept=".json" ref={restoreInputRef} onChange={handleRestore} className="hidden" />
-                                            <button onClick={() => restoreInputRef.current.click()} className="flex flex-col items-center justify-center gap-2 py-4 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-2xl font-semibold transition-colors border border-amber-100">
+                                            <button onClick={() => restoreInputRef.current.click()} className="flex flex-col items-center justify-center gap-2 py-4 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl font-semibold transition-colors border border-amber-100">
                                                 <Icons.FolderUp />
                                                 <span className="text-xs">Restore Data</span>
                                             </button>
@@ -480,7 +589,7 @@ Setelah itu, berikan laporan mendetail dengan format berikut (gunakan markdown u
                                         <h3 className="font-extrabold text-slate-800">Laporan Evaluasi Siswa</h3>
                                         <p className="text-xs font-medium text-slate-500 mt-0.5">{selectedRecord.subject} • {selectedRecord.timestamp}</p>
                                     </div>
-                                    <button onClick={() => setSelectedRecord(null)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"><Icons.X /></button>
+                                    <button onClick={() => setSelectedRecord(null)} className="p-2 text-slate-400 hover:text-red-500 bg-white rounded-xl shadow-sm transition-colors"><Icons.X /></button>
                                 </div>
                                 
                                 <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
@@ -516,21 +625,69 @@ Setelah itu, berikan laporan mendetail dengan format berikut (gunakan markdown u
                         </div>
                     )}
 
-                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+                    <main className="w-full px-4 sm:px-6 lg:px-8 py-8 pb-20">
                         
-                        {/* TAB KOREKSI */}
+                        {activeTab === 'beranda' && (
+                            <div className="space-y-8 fade-in">
+                                <div className="relative w-full rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-xl min-h-[400px] sm:min-h-[500px] flex items-center justify-center border border-white/50 group bg-slate-900">
+                                    {/* Latar Belakang */}
+                                    <img 
+                                        src={schoolInfo.background || 'https://placehold.co/1200x600/1e3a8a/ffffff?text=Latar+Belakang+Sekolah'} 
+                                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-80" 
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent"></div>
+                                    
+                                    <div className="relative z-10 text-center text-white p-6 sm:p-10 space-y-6 max-w-4xl mx-auto w-full">
+                                        <div className="w-28 h-28 sm:w-36 sm:h-36 mx-auto bg-white/10 p-2 sm:p-3 rounded-3xl sm:rounded-[2rem] backdrop-blur-md border border-white/20 shadow-2xl overflow-hidden">
+                                            <img 
+                                                src={schoolInfo.logo || 'https://placehold.co/200x200/ffffff/1e3a8a?text=Logo'} 
+                                                className="w-full h-full object-contain rounded-2xl bg-white" 
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <h1 className="text-3xl sm:text-5xl font-black tracking-tight drop-shadow-lg leading-tight">{schoolInfo.name}</h1>
+                                            <p className="text-base sm:text-xl font-semibold text-slate-200">Tahun Pelajaran {schoolInfo.year} • Kelas {schoolInfo.grade}</p>
+                                        </div>
+                                        
+                                        <div className="inline-flex items-center gap-3 px-5 sm:px-6 py-2.5 sm:py-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-lg mt-4">
+                                            <div className="w-10 h-10 rounded-full bg-brand-500 flex items-center justify-center text-white shadow-inner"><Icons.User /></div>
+                                            <div className="text-left pr-4">
+                                                <p className="text-[10px] sm:text-xs uppercase tracking-wider text-brand-200 font-extrabold">Wali Kelas</p>
+                                                <p className="font-bold text-white text-sm sm:text-base">{schoolInfo.teacherName || 'Nama Guru'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className={`grid grid-cols-1 gap-6 ${viewMode !== 'mobile' ? 'sm:grid-cols-3' : ''}`}>
+                                    <button onClick={() => setActiveTab('koreksi')} className="glass-panel p-6 rounded-3xl flex flex-col items-center text-center gap-3 hover:-translate-y-1 transition-transform group cursor-pointer">
+                                        <div className="w-14 h-14 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center group-hover:bg-brand-600 group-hover:text-white transition-colors"><Icons.Image /></div>
+                                        <div><h3 className="font-bold text-slate-800">Koreksi Cerdas AI</h3><p className="text-xs text-slate-500 mt-1">Unggah lembar jawaban siswa</p></div>
+                                    </button>
+                                    <button onClick={() => setActiveTab('database')} className="glass-panel p-6 rounded-3xl flex flex-col items-center text-center gap-3 hover:-translate-y-1 transition-transform group cursor-pointer">
+                                        <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors"><Icons.Database /></div>
+                                        <div><h3 className="font-bold text-slate-800">Master Data Siswa</h3><p className="text-xs text-slate-500 mt-1">Kelola {students.length} data siswa kelas</p></div>
+                                    </button>
+                                    <button onClick={() => setActiveTab('daftarnilai')} className="glass-panel p-6 rounded-3xl flex flex-col items-center text-center gap-3 hover:-translate-y-1 transition-transform group cursor-pointer">
+                                        <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors"><Icons.Award /></div>
+                                        <div><h3 className="font-bold text-slate-800">Rekapitulasi Nilai</h3><p className="text-xs text-slate-500 mt-1">Unduh & pantau riwayat nilai</p></div>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
                         {activeTab === 'koreksi' && (
                             <div className="space-y-6 fade-in">
-                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                                <div className={`grid grid-cols-1 gap-8 ${viewMode === 'desktop' ? 'lg:grid-cols-12' : ''}`}>
                                     {/* Kolom Kiri: Input */}
-                                    <div className="lg:col-span-5 space-y-6">
-                                        <div className="glass-panel rounded-3xl p-6">
+                                    <div className={`${viewMode === 'desktop' ? 'lg:col-span-5' : ''} space-y-6`}>
+                                        <div className="glass-panel rounded-3xl p-5 sm:p-6">
                                             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-5 flex items-center gap-2"><Icons.User /> Info Penilaian</h2>
                                             <div className="space-y-5">
                                                 <div>
                                                     <label className="block text-sm font-semibold text-slate-700 mb-2">Mata Pelajaran</label>
                                                     <div className="relative">
-                                                        <select value={subject} onChange={e => setSubject(e.target.value)} className="w-full appearance-none px-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 outline-none text-slate-700 font-medium cursor-pointer transition-all">
+                                                        <select value={subject} onChange={e => setSubject(e.target.value)} className="w-full appearance-none px-4 py-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 outline-none text-slate-700 font-medium cursor-pointer transition-all">
                                                             {subjectsList.map(item => <option key={item} value={item}>{item}</option>)}
                                                         </select>
                                                         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
@@ -541,7 +698,7 @@ Setelah itu, berikan laporan mendetail dengan format berikut (gunakan markdown u
                                                 <div>
                                                     <label className="block text-sm font-semibold text-slate-700 mb-2">Nama Siswa</label>
                                                     <div className="relative">
-                                                        <select value={selectedStudentNisn} onChange={e => setSelectedStudentNisn(e.target.value)} className="w-full appearance-none px-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 outline-none text-slate-700 font-medium cursor-pointer transition-all">
+                                                        <select value={selectedStudentNisn} onChange={e => setSelectedStudentNisn(e.target.value)} className="w-full appearance-none px-4 py-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 outline-none text-slate-700 font-medium cursor-pointer transition-all">
                                                             <option value="" disabled>Pilih dari database...</option>
                                                             {students.map(std => <option key={std.nisn} value={std.nisn}>{std.name}</option>)}
                                                         </select>
@@ -553,32 +710,32 @@ Setelah itu, berikan laporan mendetail dengan format berikut (gunakan markdown u
                                             </div>
                                         </div>
 
-                                        <div className="glass-panel rounded-3xl p-6 relative overflow-hidden">
+                                        <div className="glass-panel rounded-3xl p-5 sm:p-6 relative overflow-hidden">
                                             <div className="absolute top-0 left-0 w-1 h-full bg-brand-400"></div>
-                                            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4 flex items-center gap-2"><Icons.FileText /> Kunci Jawaban ({subject})</h2>
+                                            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4 flex items-center gap-2"><Icons.FileText /> Kunci {subject}</h2>
                                             <textarea 
                                                 value={answerKeys[subject] || ''} 
                                                 onChange={e => setAnswerKeys({...answerKeys, [subject]: e.target.value})}
-                                                className="w-full h-32 px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 outline-none text-sm text-slate-700 resize-none transition-all custom-scrollbar" 
+                                                className="w-full h-32 px-4 py-3 bg-slate-50/80 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 outline-none text-sm text-slate-700 resize-none transition-all custom-scrollbar" 
                                                 placeholder={`Ketik kunci jawaban khusus mapel ${subject} di sini...`}
                                             />
                                         </div>
                                     </div>
 
                                     {/* Kolom Kanan: Upload & Hasil */}
-                                    <div className="lg:col-span-7 space-y-6">
-                                        <div className="glass-panel rounded-3xl p-6 relative overflow-hidden group">
+                                    <div className={`${viewMode === 'desktop' ? 'lg:col-span-7' : ''} space-y-6`}>
+                                        <div className="glass-panel rounded-3xl p-5 sm:p-6 relative overflow-hidden group">
                                             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4 flex items-center gap-2"><Icons.Image /> Dokumen Jawaban</h2>
                                             <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={handleImageUpload} />
                                             {!imagePreview ? (
-                                                <div onClick={triggerFileInput} className="w-full h-48 border-2 border-dashed border-slate-300 hover:border-brand-400 hover:bg-brand-50/50 rounded-2xl flex flex-col items-center justify-center text-slate-500 cursor-pointer transition-all group-hover:shadow-inner">
-                                                    <div className="w-14 h-14 bg-white rounded-full shadow-sm flex items-center justify-center mb-3 text-brand-500 group-hover:scale-110 transition-transform"><Icons.UploadCloud /></div>
-                                                    <span className="font-semibold text-slate-700">Klik untuk mengunggah foto lembar jawaban</span>
-                                                    <span className="text-xs text-slate-400 mt-1">Format didukung: JPG, PNG</span>
+                                                <div onClick={triggerFileInput} className="w-full h-40 sm:h-48 border-2 border-dashed border-slate-300 hover:border-brand-400 hover:bg-brand-50/50 rounded-2xl flex flex-col items-center justify-center text-slate-500 cursor-pointer transition-all group-hover:shadow-inner">
+                                                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white rounded-full shadow-sm flex items-center justify-center mb-3 text-brand-500 group-hover:scale-110 transition-transform"><Icons.UploadCloud /></div>
+                                                    <span className="font-semibold text-slate-700 text-sm sm:text-base">Klik unggah foto jawaban</span>
+                                                    <span className="text-[10px] sm:text-xs text-slate-400 mt-1">Format didukung: JPG, PNG</span>
                                                 </div>
                                             ) : (
                                                 <div className="relative w-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
-                                                    <img src={imagePreview} className="w-full h-auto max-h-72 object-contain mx-auto" />
+                                                    <img src={imagePreview} className="w-full h-auto max-h-[40vh] sm:max-h-72 object-contain mx-auto" />
                                                     <div className="absolute inset-0 bg-slate-900/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
                                                         <button onClick={triggerFileInput} className="bg-white/90 text-slate-800 px-6 py-2.5 rounded-xl font-bold text-sm shadow-xl hover:scale-105 transition-transform">Ganti Foto</button>
                                                     </div>
@@ -586,7 +743,7 @@ Setelah itu, berikan laporan mendetail dengan format berikut (gunakan markdown u
                                             )}
 
                                             <button onClick={gradeExam} disabled={loading || !base64Image || !selectedStudentNisn} 
-                                                className={`w-full mt-6 py-4 rounded-2xl font-bold text-white shadow-lg flex items-center justify-center gap-3 transition-all duration-300 
+                                                className={`w-full mt-6 py-3.5 sm:py-4 rounded-2xl font-bold text-white shadow-lg flex items-center justify-center gap-3 transition-all duration-300 text-sm sm:text-base
                                                 ${loading || !base64Image || !selectedStudentNisn ? 'bg-slate-300 shadow-none cursor-not-allowed text-slate-500' : 'bg-gradient-to-r from-brand-600 to-indigo-600 hover:shadow-brand-500/30 hover:-translate-y-0.5 active:translate-y-0'}`}>
                                                 {loading ? <><Icons.Loader2 /> AI Sedang Memeriksa...</> : <><Icons.Sparkles /> Mulai Koreksi Otomatis</>}
                                             </button>
@@ -598,20 +755,20 @@ Setelah itu, berikan laporan mendetail dengan format berikut (gunakan markdown u
                                             )}
                                         </div>
 
-                                        <div className="glass-panel rounded-3xl p-6 lg:min-h-[400px] flex flex-col">
+                                        <div className="glass-panel rounded-3xl p-5 sm:p-6 lg:min-h-[400px] flex flex-col">
                                             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-5 flex items-center gap-2"><Icons.Sparkles /> Laporan Evaluasi AI</h2>
-                                            <div className="flex-1 bg-white/60 rounded-2xl border border-slate-100 p-5 overflow-auto custom-scrollbar">
+                                            <div className="flex-1 bg-white/60 rounded-2xl border border-slate-100 p-4 sm:p-5 overflow-auto custom-scrollbar">
                                                 {loading ? (
                                                     <div className="h-full min-h-[200px] flex flex-col items-center justify-center text-brand-500 space-y-4 animate-pulse">
                                                         <Icons.Loader2 />
-                                                        <p className="text-sm font-medium text-slate-500">Menganalisis tulisan tangan dan membandingkan...</p>
+                                                        <p className="text-xs sm:text-sm font-medium text-slate-500">Menganalisis tulisan tangan dan membandingkan...</p>
                                                     </div>
                                                 ) : result ? (
                                                     <div className="prose prose-slate prose-sm sm:prose-base max-w-none text-slate-700" dangerouslySetInnerHTML={formatMarkdown(result)} />
                                                 ) : (
                                                     <div className="h-full min-h-[200px] flex flex-col items-center justify-center text-slate-300">
                                                         <Icons.Check />
-                                                        <p className="text-sm font-medium mt-3 text-slate-400">Hasil evaluasi akan tampil di sini.</p>
+                                                        <p className="text-xs sm:text-sm font-medium mt-3 text-slate-400">Hasil evaluasi akan tampil di sini.</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -621,26 +778,25 @@ Setelah itu, berikan laporan mendetail dengan format berikut (gunakan markdown u
                             </div>
                         )}
 
-                        {}
                         {activeTab === 'daftarnilai' && (
                             <div className="space-y-6 fade-in">
-                                <div className="glass-panel rounded-3xl p-6 relative overflow-hidden">
+                                <div className="glass-panel rounded-3xl p-5 sm:p-6 relative overflow-hidden">
                                     <div className="absolute top-0 left-0 w-1 h-full bg-brand-500"></div>
-                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
                                         <div>
                                             <h2 className="text-xl font-extrabold text-slate-800 flex items-center gap-2"><Icons.Award /> Rekap Daftar Nilai</h2>
-                                            <p className="text-sm text-slate-500 mt-1">Laporan nilai siswa berdasarkan masing-masing mata pelajaran.</p>
+                                            <p className="text-xs sm:text-sm text-slate-500 mt-1">Laporan evaluasi berdasarkan mata pelajaran.</p>
                                         </div>
-                                        <button onClick={downloadExcel} className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md transition-all flex items-center gap-2 text-sm hover:-translate-y-0.5">
-                                            <Icons.Download /> Rekap Kelas (.CSV)
+                                        <button onClick={downloadExcel} className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md transition-all flex items-center justify-center gap-2 text-sm hover:-translate-y-0.5">
+                                            <Icons.Download /> Unduh Rekap (.CSV)
                                         </button>
                                     </div>
 
                                     {/* Filter Mapel */}
-                                    <div className="mb-6 max-w-sm">
-                                        <label className="block text-sm font-bold text-slate-700 mb-2">Filter Mata Pelajaran</label>
+                                    <div className="mb-6 w-full sm:max-w-xs">
+                                        <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-2">Filter Mata Pelajaran</label>
                                         <div className="relative">
-                                            <select value={reportSubject} onChange={e => setReportSubject(e.target.value)} className="w-full appearance-none px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none text-slate-700 font-medium cursor-pointer transition-all">
+                                            <select value={reportSubject} onChange={e => setReportSubject(e.target.value)} className="w-full appearance-none px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none text-slate-700 font-medium cursor-pointer transition-all text-sm">
                                                 <option value="Semua">Semua Mata Pelajaran</option>
                                                 {subjectsList.map(item => <option key={item} value={item}>{item}</option>)}
                                             </select>
@@ -652,19 +808,19 @@ Setelah itu, berikan laporan mendetail dengan format berikut (gunakan markdown u
 
                                     {/* Tabel Rekap */}
                                     <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
-                                        <div className="overflow-x-auto custom-scrollbar">
-                                            <table className="w-full text-left border-collapse min-w-[900px]">
+                                        <div className="overflow-x-auto custom-scrollbar max-w-[calc(100vw-3rem)]">
+                                            <table className="w-full text-left border-collapse min-w-[700px]">
                                                 <thead>
-                                                    <tr className="bg-slate-50/80 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-100">
-                                                        <th className="p-4 font-bold">Waktu</th>
-                                                        <th className="p-4 font-bold">Mapel</th>
-                                                        <th className="p-4 font-bold">NISN</th>
-                                                        <th className="p-4 font-bold">Nama Siswa</th>
-                                                        <th className="p-4 font-bold text-center">Nilai Akhir</th>
-                                                        <th className="p-4 font-bold text-center">Aksi (Rincian)</th>
+                                                    <tr className="bg-slate-50 text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider border-b border-slate-100">
+                                                        <th className="p-3 sm:p-4 font-bold">Waktu</th>
+                                                        <th className="p-3 sm:p-4 font-bold">Mapel</th>
+                                                        <th className="p-3 sm:p-4 font-bold">NISN</th>
+                                                        <th className="p-3 sm:p-4 font-bold">Nama Siswa</th>
+                                                        <th className="p-3 sm:p-4 font-bold text-center">Nilai Akhir</th>
+                                                        <th className="p-3 sm:p-4 font-bold text-center">Aksi</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="text-sm font-medium text-slate-700">
+                                                <tbody className="text-xs sm:text-sm font-medium text-slate-700">
                                                     {records.filter(r => reportSubject === 'Semua' || r.subject === reportSubject).length === 0 ? (
                                                         <tr>
                                                             <td colSpan="6" className="p-8 text-center text-slate-400">Belum ada data nilai untuk mata pelajaran ini.</td>
@@ -672,17 +828,17 @@ Setelah itu, berikan laporan mendetail dengan format berikut (gunakan markdown u
                                                     ) : (
                                                         records.filter(r => reportSubject === 'Semua' || r.subject === reportSubject).map(r => (
                                                             <tr key={r.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                                                                <td className="p-4 text-slate-400 whitespace-nowrap">{r.timestamp}</td>
-                                                                <td className="p-4 font-bold text-brand-600">{r.subject}</td>
-                                                                <td className="p-4 font-mono text-xs text-slate-500">{r.studentId}</td>
-                                                                <td className="p-4 font-bold">{r.studentName}</td>
-                                                                <td className="p-4 text-center">
-                                                                    <div className={`inline-flex items-center justify-center min-w-[3.5rem] px-3 py-1.5 rounded-xl font-extrabold text-sm ${r.score === 'N/A' ? 'bg-slate-100 text-slate-600' : r.score >= 75 ? 'bg-emerald-100 text-emerald-700' : r.score >= 50 ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>
+                                                                <td className="p-3 sm:p-4 text-slate-400 whitespace-nowrap">{r.timestamp.split(' ')[0]}</td>
+                                                                <td className="p-3 sm:p-4 font-bold text-brand-600">{r.subject}</td>
+                                                                <td className="p-3 sm:p-4 font-mono text-[10px] sm:text-xs text-slate-500">{r.studentId}</td>
+                                                                <td className="p-3 sm:p-4 font-bold">{r.studentName}</td>
+                                                                <td className="p-3 sm:p-4 text-center">
+                                                                    <div className={`inline-flex items-center justify-center min-w-[3rem] px-2.5 py-1 sm:py-1.5 rounded-xl font-extrabold text-xs sm:text-sm ${r.score === 'N/A' ? 'bg-slate-100 text-slate-600' : r.score >= 75 ? 'bg-emerald-100 text-emerald-700' : r.score >= 50 ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>
                                                                         {r.score}
                                                                     </div>
                                                                 </td>
-                                                                <td className="p-4 text-center">
-                                                                    <button onClick={() => setSelectedRecord(r)} className="inline-flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors" title="Lihat Detail & Saran">
+                                                                <td className="p-3 sm:p-4 text-center">
+                                                                    <button onClick={() => setSelectedRecord(r)} className="inline-flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition-colors" title="Lihat Detail & Saran">
                                                                         <Icons.Eye /> Lihat
                                                                     </button>
                                                                 </td>
@@ -697,62 +853,51 @@ Setelah itu, berikan laporan mendetail dengan format berikut (gunakan markdown u
                             </div>
                         )}
 
-                        {}
                         {activeTab === 'database' && (
-                            <div className="space-y-8 fade-in">
-                                <div className="glass-panel rounded-3xl p-6 relative overflow-hidden">
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-brand-500"></div>
-                                    <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-5 flex items-center gap-2"><Icons.School /> Identitas Lembaga</h2>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                        <div><label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Nama Sekolah</label><input type="text" value={schoolInfo.name} onChange={e => setSchoolInfo({...schoolInfo, name: e.target.value})} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none font-semibold text-slate-700 transition-all"/></div>
-                                        <div><label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Tahun Pelajaran</label><input type="text" value={schoolInfo.year} onChange={e => setSchoolInfo({...schoolInfo, year: e.target.value})} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none font-semibold text-slate-700 transition-all"/></div>
-                                        <div><label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Kelas</label><input type="text" value={schoolInfo.grade} onChange={e => setSchoolInfo({...schoolInfo, grade: e.target.value})} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none font-semibold text-slate-700 transition-all"/></div>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                                    <div className="lg:col-span-4">
-                                        <div className="glass-panel rounded-3xl p-6 sticky top-28">
-                                            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-5 flex items-center gap-2"><Icons.Plus /> Tambah Data Siswa</h2>
+                            <div className="space-y-6 sm:space-y-8 fade-in">
+                                <div className={`grid grid-cols-1 gap-6 sm:gap-8 ${viewMode === 'desktop' ? 'lg:grid-cols-12' : ''}`}>
+                                    <div className={`${viewMode === 'desktop' ? 'lg:col-span-4' : ''}`}>
+                                        <div className="glass-panel rounded-3xl p-5 sm:p-6 lg:sticky lg:top-24">
+                                            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-5 flex items-center gap-2"><Icons.Plus /> Tambah Siswa</h2>
                                             <form onSubmit={handleAddStudent} className="space-y-4">
-                                                <div><label className="block text-xs font-bold text-slate-500 mb-1.5">NISN</label><input required type="text" placeholder="Contoh: 0123456" value={newStudent.nisn} onChange={e => setNewStudent({...newStudent, nisn: e.target.value})} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none font-medium text-slate-700"/></div>
-                                                <div><label className="block text-xs font-bold text-slate-500 mb-1.5">Nama Lengkap</label><input required type="text" placeholder="Masukkan nama..." value={newStudent.name} onChange={e => setNewStudent({...newStudent, name: e.target.value.toUpperCase()})} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none font-medium text-slate-700"/></div>
+                                                <div><label className="block text-xs font-bold text-slate-500 mb-1.5">NISN</label><input required type="text" placeholder="Contoh: 0123456" value={newStudent.nisn} onChange={e => setNewStudent({...newStudent, nisn: e.target.value})} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none font-medium text-slate-700 text-sm"/></div>
+                                                <div><label className="block text-xs font-bold text-slate-500 mb-1.5">Nama Lengkap</label><input required type="text" placeholder="Masukkan nama..." value={newStudent.name} onChange={e => setNewStudent({...newStudent, name: e.target.value.toUpperCase()})} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none font-medium text-slate-700 text-sm"/></div>
                                                 <div>
                                                     <label className="block text-xs font-bold text-slate-500 mb-1.5">Jenis Kelamin</label>
-                                                    <select value={newStudent.jk} onChange={e => setNewStudent({...newStudent, jk: e.target.value})} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none font-medium text-slate-700 cursor-pointer">
+                                                    <select value={newStudent.jk} onChange={e => setNewStudent({...newStudent, jk: e.target.value})} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 outline-none font-medium text-slate-700 cursor-pointer text-sm">
                                                         <option value="L">Laki-laki (L)</option><option value="P">Perempuan (P)</option>
                                                     </select>
                                                 </div>
-                                                <button type="submit" className="w-full mt-2 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold transition-all shadow-md hover:shadow-lg">Simpan ke Database</button>
+                                                <button type="submit" className="w-full mt-2 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold transition-all shadow-md hover:shadow-lg text-sm">Simpan Data</button>
                                             </form>
                                         </div>
                                     </div>
 
-                                    <div className="lg:col-span-8">
-                                        <div className="glass-panel rounded-3xl p-6">
+                                    <div className={`${viewMode === 'desktop' ? 'lg:col-span-8' : ''}`}>
+                                        <div className="glass-panel rounded-3xl p-5 sm:p-6">
                                             <div className="flex justify-between items-center mb-6">
                                                 <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2"><Icons.Database /> Master Data Siswa</h2>
-                                                <div className="bg-brand-100 text-brand-700 px-3 py-1 rounded-full text-xs font-extrabold">{students.length} Terdaftar</div>
+                                                <div className="bg-brand-100 text-brand-700 px-3 py-1 rounded-full text-[10px] sm:text-xs font-extrabold">{students.length} Terdaftar</div>
                                             </div>
                                             <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
-                                                <div className="overflow-x-auto overflow-y-auto max-h-[500px] custom-scrollbar">
-                                                    <table className="w-full text-left border-collapse">
+                                                <div className="overflow-x-auto overflow-y-auto max-h-[500px] custom-scrollbar max-w-[calc(100vw-3rem)]">
+                                                    <table className="w-full text-left border-collapse min-w-[400px]">
                                                         <thead className="sticky top-0 bg-slate-50/95 backdrop-blur-sm z-10">
-                                                            <tr className="text-slate-500 text-xs uppercase tracking-wider border-b border-slate-100">
-                                                                <th className="p-4 font-bold">No</th>
-                                                                <th className="p-4 font-bold">NISN</th>
-                                                                <th className="p-4 font-bold">Nama Lengkap</th>
-                                                                <th className="p-4 font-bold text-center">Gender</th>
+                                                            <tr className="text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider border-b border-slate-100">
+                                                                <th className="p-3 sm:p-4 font-bold">No</th>
+                                                                <th className="p-3 sm:p-4 font-bold">NISN</th>
+                                                                <th className="p-3 sm:p-4 font-bold">Nama Lengkap</th>
+                                                                <th className="p-3 sm:p-4 font-bold text-center">Gender</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody className="text-sm font-medium text-slate-700">
+                                                        <tbody className="text-xs sm:text-sm font-medium text-slate-700">
                                                             {students.map((std, idx) => (
                                                                 <tr key={idx} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                                                                    <td className="p-4 text-slate-400">{idx + 1}</td>
-                                                                    <td className="p-4 font-mono text-xs text-slate-500">{std.nisn}</td>
-                                                                    <td className="p-4 font-bold text-slate-800">{std.name}</td>
-                                                                    <td className="p-4 text-center">
-                                                                        <span className={`inline-flex w-8 h-8 items-center justify-center rounded-lg font-bold text-xs ${std.jk === 'L' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'}`}>{std.jk}</span>
+                                                                    <td className="p-3 sm:p-4 text-slate-400">{idx + 1}</td>
+                                                                    <td className="p-3 sm:p-4 font-mono text-[10px] sm:text-xs text-slate-500">{std.nisn}</td>
+                                                                    <td className="p-3 sm:p-4 font-bold text-slate-800">{std.name}</td>
+                                                                    <td className="p-3 sm:p-4 text-center">
+                                                                        <span className={`inline-flex w-7 h-7 sm:w-8 sm:h-8 items-center justify-center rounded-lg font-bold text-[10px] sm:text-xs ${std.jk === 'L' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'}`}>{std.jk}</span>
                                                                     </td>
                                                                 </tr>
                                                             ))}
@@ -766,6 +911,7 @@ Setelah itu, berikan laporan mendetail dengan format berikut (gunakan markdown u
                             </div>
                         )}
                     </main>
+                    </div>
                 </div>
             );
         }
