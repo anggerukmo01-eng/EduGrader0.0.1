@@ -1,629 +1,476 @@
-import React, { useState, useRef } from 'react';
-import { UploadCloud, CheckCircle, AlertCircle, FileText, Loader2, Image as ImageIcon, User, Download, Table as TableIcon, BookOpen, Users, Database, Plus, School } from 'lucide-react';
-
-const apiKey = ""; // API Key akan diisi otomatis oleh environment
-
-// Data default yang telah diperbarui sesuai gambar
-const defaultStudents = [
-  { nisn: '3186088743', name: 'ATHA ZAFRAN RAMADHAN', jk: 'L' },
-  { nisn: '3184668441', name: 'Cakra Abiyasa', jk: 'L' },
-  { nisn: '3198245070', name: 'DELIA ZAHRA SALSABILA', jk: 'P' },
-  { nisn: '3182191613', name: 'Elvano Akmal Dwitama', jk: 'L' },
-  { nisn: '3180097773', name: 'Fajar Askari Ramdani', jk: 'L' },
-  { nisn: '3190609374', name: 'FARRA AYSHA AZZAHRA', jk: 'P' },
-  { nisn: '3196928983', name: 'Fauziah Hasni Faiq Syarif', jk: 'P' },
-  { nisn: '3176829400', name: 'FELLISA PUTRI HIDAYAT', jk: 'P' },
-  { nisn: '3194416472', name: 'GHALI NUFAIL TSAMARADANIE', jk: 'L' },
-  { nisn: '3181245719', name: 'GILANG ARJUNA RAMADHAN', jk: 'L' },
-  { nisn: '3185432764', name: 'HAFIT RAMADHANI SAFUTRA', jk: 'L' },
-  { nisn: '3198630567', name: 'Kesya Lutfia Alhanisputri', jk: 'P' },
-  { nisn: '3180176114', name: 'MAULANA YUSUF ALFARIZQI', jk: 'L' },
-  { nisn: '3185715005', name: 'MUHAMMAD ABDILAH MUZAQI', jk: 'L' },
-  { nisn: '3195455121', name: 'Rafasya Alvin Faaz', jk: 'L' },
-  { nisn: '3195732811', name: 'Randy Prasetya', jk: 'L' },
-  { nisn: '3197098742', name: 'RIVANDRA LUJA ANUGRAH', jk: 'L' },
-  { nisn: '3180556733', name: 'WISNU ARYA KENCANA', jk: 'L' },
-  { nisn: '3194871087', name: 'YUSUF AFKA RIANSYAH', jk: 'L' },
-];
-
-const subjectsList = [
-  'PPKn',
-  'Bahasa Indonesia',
-  'Matematika',
-  'Seni Rupa',
-  'Bahasa Jawa'
-];
-
-export default function App() {
-  // Navigation State
-  const [activeTab, setActiveTab] = useState('koreksi'); // 'koreksi' | 'database'
-
-  // Identitas Sekolah State
-  const [schoolInfo, setSchoolInfo] = useState({
-    name: 'SD Negeri 1 Gerduren',
-    year: '2025/2026',
-    grade: '1'
-  });
-
-  // Database Siswa State
-  const [students, setStudents] = useState(defaultStudents);
-  const [newStudent, setNewStudent] = useState({ nisn: '', name: '', jk: 'L' });
-
-  // Koreksi State
-  const [imagePreview, setImagePreview] = useState(null);
-  const [base64Image, setBase64Image] = useState(null);
-  const [mimeType, setMimeType] = useState(null);
-  const [answerKey, setAnswerKey] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
-  const [subject, setSubject] = useState('PPKn');
-  const [selectedStudentNisn, setSelectedStudentNisn] = useState('');
-  const [records, setRecords] = useState([]);
-  
-  const fileInputRef = useRef(null);
-
-  // --- Handlers untuk Database Siswa ---
-  const handleAddStudent = (e) => {
-    e.preventDefault();
-    if (!newStudent.nisn || !newStudent.name) {
-      alert("NISN dan Nama Siswa harus diisi!");
-      return;
-    }
-    setStudents([...students, newStudent]);
-    setNewStudent({ nisn: '', name: '', jk: 'L' }); // Reset form
-    alert("Data siswa berhasil ditambahkan!");
-  };
-
-  const handleSchoolInfoChange = (e, field) => {
-    setSchoolInfo({ ...schoolInfo, [field]: e.target.value });
-  };
-
-  // --- Handlers untuk Koreksi ---
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setError('Silakan unggah file gambar (JPG/PNG).');
-      return;
-    }
-    setMimeType(file.type);
-    setError(null);
-    setResult(null);
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-      const base64String = reader.result.split(',')[1];
-      setBase64Image(base64String);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const triggerFileInput = () => fileInputRef.current.click();
-
-  const downloadExcel = () => {
-    if (records.length === 0) return;
-    const headers = ['Sekolah', 'Tahun Pelajaran', 'Kelas', 'Waktu', 'Mata Pelajaran', 'NISN', 'Nama Siswa', 'Nilai Akhir'];
-    const csvContent = [
-      headers.join(','),
-      ...records.map(r => `"${r.schoolName}","${r.academicYear}","${r.gradeClass}","${r.timestamp}","${r.subject}","${r.studentId}","${r.studentName}","${r.score}"`)
-    ].join('\n');
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduGrader AI - Koreksi Otomatis</title>
     
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `Rekap_Nilai_${schoolInfo.name.replace(/\s+/g, '_')}_Kls${schoolInfo.grade}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel (untuk mengubah JSX di browser) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-  const fetchWithRetry = async (url, options, maxRetries = 5) => {
-    const delays = [1000, 2000, 4000, 8000, 16000];
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        const response = await fetch(url, options);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        return await response.json();
-      } catch (err) {
-        if (i === maxRetries - 1) throw err;
-        await delay(delays[i]);
-      }
-    }
-  };
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        /* Animasi loading sederhana */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .animate-spin { animation: spin 1s linear infinite; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
 
-  const gradeExam = async () => {
-    if (!base64Image) {
-      setError('Silakan unggah foto jawaban siswa terlebih dahulu.');
-      return;
-    }
-    if (!selectedStudentNisn) {
-      setError('Silakan pilih data siswa dari dropdown terlebih dahulu.');
-      return;
-    }
+    <div id="root"></div>
 
-    setLoading(true);
-    setError(null);
-    setResult(null);
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
 
-    const prompt = `
-      Kamu adalah seorang guru ahli untuk mata pelajaran ${subject}. 
-      Tugasmu adalah mengoreksi lembar jawaban siswa dari gambar yang diberikan.
-      
-      Kunci Jawaban dan Kriteria Penilaian:
-      ${answerKey ? answerKey : "Gunakan pengetahuan dan kaidah keilmuan yang tepat untuk mata pelajaran " + subject + " dalam menilai jawaban secara objektif."}
-      
-      Tugasmu:
-      1. Baca teks pada gambar lembar jawaban siswa dengan cermat. Perhatikan baik-baik tulisan tangan, rumus (jika ada), atau ejaan.
-      2. Bandingkan jawaban siswa dengan kunci jawaban atau pedoman standar mata pelajaran ${subject}.
-      3. Berikan penilaian terstruktur.
-      
-      PENTING: Pada baris pertama responmu, kamu WAJIB menuliskan format persis seperti ini: NILAI_AKHIR: [angka 0-100]. 
-      Contoh: NILAI_AKHIR: 85
-      
-      Setelah itu, lanjutkan dengan format berikut:
-         - **Analisis Jawaban**: (Sebutkan nomor/bagian soal, jawaban siswa, dan status Benar/Salah beserta alasan singkat sesuai konteks pelajaran ${subject})
-         - **Saran**: (Saran perbaikan singkat untuk siswa)
-    `;
+        // Data default
+        const defaultStudents = [
+          { nisn: '3186088743', name: 'ATHA ZAFRAN RAMADHAN', jk: 'L' },
+          { nisn: '3184668441', name: 'CAKRA ABIYASA', jk: 'L' },
+          { nisn: '3198245070', name: 'DELIA ZAHRA SALSABILA', jk: 'P' },
+          { nisn: '3182191613', name: 'ELVANO AKMAL DWITAMA', jk: 'L' },
+          { nisn: '3180097773', name: 'FAJAR ASKARI RAMDANI', jk: 'L' },
+          { nisn: '3190609374', name: 'FARRA AYSHA AZZAHRA', jk: 'P' },
+          { nisn: '3196928983', name: 'FAUZIAH HASNI FAIQ SYARIF', jk: 'P' },
+          { nisn: '3176829400', name: 'FELLISA PUTRI HIDAYAT', jk: 'P' },
+          { nisn: '3194416472', name: 'GHALI NUFAIL TSAMARADANIE', jk: 'L' },
+          { nisn: '3181245719', name: 'GILANG ARJUNA RAMADHAN', jk: 'L' },
+          { nisn: '3185432764', name: 'HAFIT RAMADHANI SAFUTRA', jk: 'L' },
+          { nisn: '3198630567', name: 'KESYA LUTFIA ALHANISPUTRI', jk: 'P' },
+          { nisn: '3180176114', name: 'MAULANA YUSUF ALFARIZQI', jk: 'L' },
+          { nisn: '3185715005', name: 'MUHAMMAD ABDILAH MUZAQI', jk: 'L' },
+          { nisn: '3195455121', name: 'RAFASYA ALVIN FAAZ', jk: 'L' },
+          { nisn: '3195732811', name: 'RANDY PRASETYA', jk: 'L' },
+          { nisn: '3197098742', name: 'RIVANDRA LUJA ANUGRAH', jk: 'L' },
+          { nisn: '3180556733', name: 'WISNU ARYA KENCANA', jk: 'L' },
+          { nisn: '3194871087', name: 'YUSUF AFKA RIANSYAH', jk: 'L' }
+        ];
 
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-      const payload = {
-        contents: [
-          {
-            role: "user",
-            parts: [
-              { text: prompt },
-              { inlineData: { mimeType: mimeType || "image/jpeg", data: base64Image } }
-            ]
-          }
-        ]
-      };
+        const subjectsList = ['PPKn', 'Bahasa Indonesia', 'Matematika', 'Seni Rupa', 'Bahasa Jawa'];
 
-      const data = await fetchWithRetry(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+        // Komponen Ikon (SVG langsung karena tidak bisa import komponen Lucide di UMD Babel)
+        const IconCheckCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
+        const IconSchool = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-school"><path d="M14 22v-4a2 2 0 1 0-4 0v4"/><path d="m18 10 4 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8l4-2"/><path d="M18 5v17"/><path d="m4 6 8-4 8 4"/><path d="M6 5v17"/><circle cx="12" cy="9" r="2"/></svg>;
+        const IconImage = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>;
+        const IconDatabase = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-database"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>;
+        const IconUser = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+        const IconBookOpen = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-book-open"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+        const IconUsers = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+        const IconFileText = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>;
+        const IconUploadCloud = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-upload-cloud"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>;
+        const IconLoader2 = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-loader-2 animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>;
+        const IconAlertCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-alert-circle"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>;
+        const IconTable = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-table"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="3" x2="21" y1="15" y2="15"/><line x1="9" x2="9" y1="9" y2="21"/><line x1="15" x2="15" y1="9" y2="21"/></svg>;
+        const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>;
+        const IconPlus = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>;
 
-      if (data && data.candidates && data.candidates.length > 0) {
-        const textResponse = data.candidates[0].content.parts[0].text;
-        setResult(textResponse);
-        
-        const scoreMatch = textResponse.match(/NILAI_AKHIR[^\d]*(\d+)/i);
-        const score = scoreMatch ? parseInt(scoreMatch[1], 10) : 'N/A';
-        
-        // Cari nama siswa berdasarkan NISN yang dipilih
-        const selectedStudent = students.find(s => s.nisn === selectedStudentNisn);
-        
-        const newRecord = {
-          id: Date.now(),
-          studentName: selectedStudent ? selectedStudent.name : 'Unknown',
-          studentId: selectedStudentNisn,
-          subject: subject,
-          score: score,
-          timestamp: new Date().toLocaleString('id-ID'),
-          schoolName: schoolInfo.name,
-          academicYear: schoolInfo.year,
-          gradeClass: schoolInfo.grade
-        };
-        setRecords(prev => [...prev, newRecord]);
-      } else {
-        throw new Error("Respon dari AI tidak valid.");
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Gagal mengoreksi jawaban. Pastikan koneksi internet stabil atau coba lagi beberapa saat.");
-    } finally {
-      setLoading(false);
-    }
-  };
+        function App() {
+            // API Key Setting
+            const [apiKey, setApiKey] = useState('');
+            const [showApiInput, setShowApiInput] = useState(true);
 
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
-      
-      {/* Navbar / Menu Tabs */}
-      <nav className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 md:px-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-indigo-700 flex items-center gap-2">
-                <CheckCircle className="w-6 h-6" />
-                EduGrader AI
-              </h1>
-              <p className="text-xs text-slate-500 mt-1 font-medium flex items-center gap-1">
-                <School className="w-3 h-3" />
-                {schoolInfo.name} • Tahun {schoolInfo.year} • Kelas {schoolInfo.grade}
-              </p>
-            </div>
-            <div className="flex bg-slate-100 p-1 rounded-xl w-full md:w-auto overflow-x-auto">
-              <button
-                onClick={() => setActiveTab('koreksi')}
-                className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
-                  activeTab === 'koreksi' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                <ImageIcon className="w-4 h-4" />
-                Koreksi Ujian
-              </button>
-              <button
-                onClick={() => setActiveTab('database')}
-                className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
-                  activeTab === 'database' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                <Database className="w-4 h-4" />
-                Database Siswa
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <div className="p-4 md:p-8 max-w-6xl mx-auto">
-        
-        {/* =========================================
-            TAB 1: KOREKSI UJIAN
-            ========================================= */}
-        {activeTab === 'koreksi' && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Kolom Input */}
-              <div className="space-y-6">
-                
-                {/* Input Data Siswa & Mapel */}
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                  <label className="flex items-center gap-2 font-semibold text-slate-700 mb-4">
-                    <User className="w-5 h-5 text-indigo-500" />
-                    Data Koreksi
-                  </label>
-                  
-                  <div className="space-y-4">
-                    {/* Pilihan Mata Pelajaran */}
-                    <div>
-                      <label className="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
-                        <BookOpen className="w-3.5 h-3.5" /> Mata Pelajaran
-                      </label>
-                      <select
-                        value={subject}
-                        onChange={(e) => setSubject(e.target.value)}
-                        className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm bg-white cursor-pointer"
-                      >
-                        {subjectsList.map((item, idx) => (
-                          <option key={idx} value={item}>{item}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Dropdown Pilihan Siswa */}
-                    <div>
-                      <label className="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
-                        <Users className="w-3.5 h-3.5" /> Pilih Siswa (Kelas {schoolInfo.grade})
-                      </label>
-                      <select
-                        value={selectedStudentNisn}
-                        onChange={(e) => setSelectedStudentNisn(e.target.value)}
-                        className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm bg-white cursor-pointer"
-                      >
-                        <option value="" disabled>-- Pilih Nama Siswa --</option>
-                        {students.map((std, idx) => (
-                          <option key={idx} value={std.nisn}>
-                            {std.name} (NISN: {std.nisn})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Input Kunci Jawaban */}
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                  <label className="flex items-center gap-2 font-semibold text-slate-700 mb-2">
-                    <FileText className="w-5 h-5 text-indigo-500" />
-                    Kunci Jawaban & Panduan (Opsional)
-                  </label>
-                  <textarea
-                    className="w-full h-28 p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none transition-all text-sm"
-                    placeholder="Contoh:&#10;1. Ibu Kota Indonesia adalah Jakarta (Poin 20)&#10;2. 5 x 5 = 25 (Poin 20)&#10;Dst..."
-                    value={answerKey}
-                    onChange={(e) => setAnswerKey(e.target.value)}
-                  />
-                </div>
-
-                {/* Upload Area */}
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                  <label className="flex items-center gap-2 font-semibold text-slate-700 mb-2">
-                    <ImageIcon className="w-5 h-5 text-indigo-500" />
-                    Foto Jawaban Siswa
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    ref={fileInputRef}
-                    className="hidden"
-                    onChange={handleImageUpload}
-                  />
-                  
-                  {!imagePreview ? (
-                    <div 
-                      onClick={triggerFileInput}
-                      className="w-full h-40 border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-slate-500 hover:bg-slate-50 hover:border-indigo-400 cursor-pointer transition-all"
-                    >
-                      <UploadCloud className="w-10 h-10 mb-2 text-slate-400" />
-                      <span className="font-medium text-sm">Klik untuk mengunggah foto</span>
-                      <span className="text-xs mt-1">Mendukung JPG, PNG</span>
-                    </div>
-                  ) : (
-                    <div className="relative w-full rounded-xl overflow-hidden border border-slate-200 group">
-                      <img src={imagePreview} alt="Preview" className="w-full h-auto max-h-56 object-contain bg-slate-100" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <button 
-                          onClick={triggerFileInput}
-                          className="bg-white text-slate-800 px-4 py-2 rounded-lg font-medium text-sm shadow-lg hover:bg-slate-100"
-                        >
-                          Ganti Foto
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Tombol Aksi */}
-                <button
-                  onClick={gradeExam}
-                  disabled={loading || !base64Image || !selectedStudentNisn}
-                  className={`w-full py-3.5 rounded-xl font-bold text-white shadow-md transition-all flex items-center justify-center gap-2
-                    ${loading || !base64Image || !selectedStudentNisn
-                      ? 'bg-slate-400 cursor-not-allowed' 
-                      : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg active:scale-[0.98]'}`}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Menganalisis Jawaban...
-                    </>
-                  ) : (
-                    'Koreksi Sekarang'
-                  )}
-                </button>
-
-                {error && (
-                  <div className="bg-red-50 text-red-600 p-4 rounded-xl flex items-start gap-3 border border-red-200">
-                    <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                    <p className="text-sm">{error}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Kolom Hasil */}
-              <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 h-full min-h-[400px]">
-                 <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3">
-                   Hasil Koreksi AI
-                 </h2>
-                 
-                 {loading ? (
-                   <div className="h-64 flex flex-col items-center justify-center text-slate-400 space-y-4">
-                     <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
-                     <p className="text-sm text-center">
-                       AI sedang membaca tulisan tangan untuk pelajaran <b>{subject}</b><br/>dan membandingkannya dengan kunci...
-                     </p>
-                   </div>
-                 ) : result ? (
-                   <div className="prose prose-slate max-w-none text-slate-700 text-sm md:text-base">
-                     <div className="whitespace-pre-wrap font-medium">
-                       {result}
-                     </div>
-                   </div>
-                 ) : (
-                   <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
-                     <CheckCircle className="w-12 h-12 mb-3 opacity-20" />
-                     <p className="text-sm">Hasil koreksi akan muncul di sini setelah Anda mengklik tombol <b>Koreksi Sekarang</b>.</p>
-                   </div>
-                 )}
-              </div>
-            </div>
-
-            {/* Tabel Rekap Nilai */}
-            {records.length > 0 && (
-              <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 mt-8">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 border-b border-slate-100 pb-4">
-                  <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <TableIcon className="w-6 h-6 text-indigo-600" />
-                    Rekap Daftar Nilai
-                  </h2>
-                  <button
-                    onClick={downloadExcel}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-medium shadow-sm transition-all flex items-center gap-2 text-sm active:scale-95"
-                  >
-                    <Download className="w-4 h-4" />
-                    Unduh Rekap (.CSV)
-                  </button>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse min-w-[700px]">
-                    <thead>
-                      <tr className="bg-slate-50 text-slate-600 border-b border-slate-200 text-sm">
-                        <th className="p-3 font-semibold rounded-tl-lg">Waktu</th>
-                        <th className="p-3 font-semibold">Mapel</th>
-                        <th className="p-3 font-semibold">NISN</th>
-                        <th className="p-3 font-semibold">Nama Siswa</th>
-                        <th className="p-3 font-semibold text-center rounded-tr-lg">Nilai Akhir</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {records.map((record) => (
-                        <tr key={record.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors text-sm">
-                          <td className="p-3 text-slate-500 whitespace-nowrap">{record.timestamp}</td>
-                          <td className="p-3 font-medium text-indigo-600">{record.subject}</td>
-                          <td className="p-3 font-medium text-slate-700">{record.studentId}</td>
-                          <td className="p-3 font-medium text-slate-700">{record.studentName}</td>
-                          <td className="p-3 text-center">
-                            <span className={`px-3 py-1 rounded-full font-bold text-xs inline-block min-w-[3rem] ${
-                              record.score === 'N/A' ? 'bg-slate-100 text-slate-600' :
-                              record.score >= 75 ? 'bg-green-100 text-green-700' :
-                              record.score >= 50 ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-red-100 text-red-700'
-                            }`}>
-                              {record.score}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* =========================================
-            TAB 2: DATABASE SISWA
-            ========================================= */}
-        {activeTab === 'database' && (
-          <div className="space-y-6 animate-in fade-in duration-300">
+            const [activeTab, setActiveTab] = useState('koreksi');
             
-            {/* Form Identitas Sekolah */}
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-              <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3">
-                <School className="w-5 h-5 text-indigo-500" />
-                Identitas Sekolah & Kelas
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-500 mb-1">Nama Sekolah</label>
-                  <input
-                    type="text"
-                    className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                    value={schoolInfo.name}
-                    onChange={(e) => handleSchoolInfoChange(e, 'name')}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-500 mb-1">Tahun Pelajaran</label>
-                  <input
-                    type="text"
-                    className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                    value={schoolInfo.year}
-                    onChange={(e) => handleSchoolInfoChange(e, 'year')}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-500 mb-1">Kelas</label>
-                  <input
-                    type="text"
-                    className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                    value={schoolInfo.grade}
-                    onChange={(e) => handleSchoolInfoChange(e, 'grade')}
-                  />
-                </div>
-              </div>
-            </div>
+            const [schoolInfo, setSchoolInfo] = useState({
+                name: 'SD Negeri 1 Gerduren',
+                year: '2025/2026',
+                grade: '1'
+            });
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Form Tambah Siswa */}
-              <div className="md:col-span-1">
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 sticky top-24">
-                  <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3">
-                    <Plus className="w-5 h-5 text-indigo-500" />
-                    Tambah Siswa Baru
-                  </h2>
-                  <form onSubmit={handleAddStudent} className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">NISN / Nomor Induk</label>
-                      <input
-                        type="text"
-                        required
-                        className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm"
-                        placeholder="Contoh: 0108331165"
-                        value={newStudent.nisn}
-                        onChange={(e) => setNewStudent({...newStudent, nisn: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Nama Lengkap</label>
-                      <input
-                        type="text"
-                        required
-                        className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm"
-                        placeholder="Contoh: Budi Santoso"
-                        value={newStudent.name}
-                        onChange={(e) => setNewStudent({...newStudent, name: e.target.value.toUpperCase()})}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Jenis Kelamin</label>
-                      <select
-                        className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-white"
-                        value={newStudent.jk}
-                        onChange={(e) => setNewStudent({...newStudent, jk: e.target.value})}
-                      >
-                        <option value="L">Laki-Laki (L)</option>
-                        <option value="P">Perempuan (P)</option>
-                      </select>
-                    </div>
-                    <button
-                      type="submit"
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold shadow-sm transition-all text-sm mt-2"
-                    >
-                      Simpan Data
-                    </button>
-                  </form>
-                </div>
-              </div>
+            const [students, setStudents] = useState(defaultStudents);
+            const [newStudent, setNewStudent] = useState({ nisn: '', name: '', jk: 'L' });
 
-              {/* Tabel Master Siswa */}
-              <div className="md:col-span-2">
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                  <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                    <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                      <Database className="w-5 h-5 text-indigo-500" />
-                      Daftar Master Siswa
-                    </h2>
-                    <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">
-                      Total: {students.length} Siswa
-                    </span>
-                  </div>
-                  
-                  <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
-                    <table className="w-full text-left border-collapse">
-                      <thead className="sticky top-0 bg-slate-50 z-10">
-                        <tr className="text-slate-600 border-b border-slate-200 text-sm">
-                          <th className="p-3 font-semibold">No</th>
-                          <th className="p-3 font-semibold">NISN</th>
-                          <th className="p-3 font-semibold">Nama Lengkap</th>
-                          <th className="p-3 font-semibold text-center">L/P</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {students.map((std, idx) => (
-                          <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50 transition-colors text-sm">
-                            <td className="p-3 text-slate-500">{idx + 1}</td>
-                            <td className="p-3 font-medium text-slate-700">{std.nisn}</td>
-                            <td className="p-3 font-semibold text-slate-800">{std.name}</td>
-                            <td className="p-3 text-center">
-                              <span className={`px-2 py-1 rounded-md text-xs font-bold ${
-                                std.jk === 'L' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'
-                              }`}>
-                                {std.jk}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+            const [imagePreview, setImagePreview] = useState(null);
+            const [base64Image, setBase64Image] = useState(null);
+            const [mimeType, setMimeType] = useState(null);
+            const [answerKey, setAnswerKey] = useState('');
+            const [loading, setLoading] = useState(false);
+            const [result, setResult] = useState(null);
+            const [error, setError] = useState(null);
+            const [subject, setSubject] = useState('PPKn');
+            const [selectedStudentNisn, setSelectedStudentNisn] = useState('');
+            const [records, setRecords] = useState([]);
+            
+            const fileInputRef = useRef(null);
+
+            useEffect(() => {
+                // Coba ambil API Key dari localStorage jika ada
+                const savedKey = localStorage.getItem('geminiApiKey');
+                if (savedKey) {
+                    setApiKey(savedKey);
+                    setShowApiInput(false);
+                }
+            }, []);
+
+            const saveApiKey = () => {
+                if(!apiKey) {
+                    alert("API Key tidak boleh kosong!");
+                    return;
+                }
+                localStorage.setItem('geminiApiKey', apiKey);
+                setShowApiInput(false);
+            };
+
+            const resetApiKey = () => {
+                localStorage.removeItem('geminiApiKey');
+                setApiKey('');
+                setShowApiInput(true);
+            };
+
+            const handleAddStudent = (e) => {
+                e.preventDefault();
+                if (!newStudent.nisn || !newStudent.name) {
+                    alert("NISN dan Nama Siswa harus diisi!");
+                    return;
+                }
+                setStudents([...students, newStudent]);
+                setNewStudent({ nisn: '', name: '', jk: 'L' });
+                alert("Data siswa berhasil ditambahkan!");
+            };
+
+            const handleImageUpload = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (!file.type.startsWith('image/')) {
+                    setError('Silakan unggah file gambar (JPG/PNG).');
+                    return;
+                }
+                setMimeType(file.type);
+                setError(null);
+                setResult(null);
+
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setImagePreview(reader.result);
+                    const base64String = reader.result.split(',')[1];
+                    setBase64Image(base64String);
+                };
+                reader.readAsDataURL(file);
+            };
+
+            const triggerFileInput = () => fileInputRef.current.click();
+
+            const downloadExcel = () => {
+                if (records.length === 0) return;
+                const headers = ['Sekolah', 'Tahun Pelajaran', 'Kelas', 'Waktu', 'Mata Pelajaran', 'NISN', 'Nama Siswa', 'Nilai Akhir'];
+                const csvContent = [
+                    headers.join(','),
+                    ...records.map(r => `"${r.schoolName}","${r.academicYear}","${r.gradeClass}","${r.timestamp}","${r.subject}","${r.studentId}","${r.studentName}","${r.score}"`)
+                ].join('\n');
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `Rekap_Nilai_${schoolInfo.name.replace(/\s+/g, '_')}_Kls${schoolInfo.grade}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            const gradeExam = async () => {
+                if (!apiKey) {
+                    setError('Silakan masukkan Gemini API Key terlebih dahulu di bagian atas aplikasi.');
+                    setShowApiInput(true);
+                    return;
+                }
+                if (!base64Image) {
+                    setError('Silakan unggah foto jawaban siswa terlebih dahulu.');
+                    return;
+                }
+                if (!selectedStudentNisn) {
+                    setError('Silakan pilih data siswa dari dropdown terlebih dahulu.');
+                    return;
+                }
+
+                setLoading(true);
+                setError(null);
+                setResult(null);
+
+                const prompt = `
+Kamu adalah seorang guru ahli untuk mata pelajaran ${subject}. Tugasmu adalah mengoreksi lembar jawaban siswa dari gambar yang diberikan.
+Kunci Jawaban dan Kriteria Penilaian: ${answerKey ? answerKey : "Gunakan pengetahuan umum untuk menilai."}
+Tugasmu:
+1. Baca teks pada gambar lembar jawaban siswa.
+2. Bandingkan dengan kunci jawaban.
+3. Berikan penilaian.
+PENTING: Pada baris pertama responmu, kamu WAJIB menuliskan format persis seperti ini: NILAI_AKHIR: [angka 0-100]. Contoh: NILAI_AKHIR: 85
+Setelah itu, jelaskan analisis jawaban per nomor dan saran perbaikan.
+`;
+
+                try {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                    const payload = {
+                        contents: [{
+                            role: "user",
+                            parts: [
+                                { text: prompt },
+                                { inlineData: { mimeType: mimeType || "image/jpeg", data: base64Image } }
+                            ]
+                        }]
+                    };
+
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) throw new Error(`Error API: ${response.status}`);
+                    const data = await response.json();
+
+                    if (data && data.candidates && data.candidates.length > 0) {
+                        const textResponse = data.candidates[0].content.parts[0].text;
+                        setResult(textResponse);
+                        
+                        const scoreMatch = textResponse.match(/NILAI_AKHIR[^\d]*(\d+)/i);
+                        const score = scoreMatch ? parseInt(scoreMatch[1], 10) : 'N/A';
+                        
+                        const selectedStudent = students.find(s => s.nisn === selectedStudentNisn);
+                        
+                        setRecords(prev => [...prev, {
+                            id: Date.now(),
+                            studentName: selectedStudent ? selectedStudent.name : 'Unknown',
+                            studentId: selectedStudentNisn,
+                            subject: subject,
+                            score: score,
+                            timestamp: new Date().toLocaleString('id-ID'),
+                            schoolName: schoolInfo.name,
+                            academicYear: schoolInfo.year,
+                            gradeClass: schoolInfo.grade
+                        }]);
+                    } else {
+                        throw new Error("Respon API kosong.");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    setError("Gagal mengoreksi jawaban. Cek API Key dan koneksi internet.");
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <div className="min-h-screen">
+                    {/* Top Alert for API Key */}
+                    {showApiInput && (
+                        <div className="bg-amber-100 border-b border-amber-200 p-4">
+                            <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-4">
+                                <div className="text-amber-800 font-semibold flex items-center gap-2">
+                                    <IconAlertCircle />
+                                    <span>Masukkan Gemini API Key untuk menggunakan fitur AI:</span>
+                                </div>
+                                <div className="flex w-full md:w-auto gap-2">
+                                    <input 
+                                        type="password" 
+                                        value={apiKey} 
+                                        onChange={e => setApiKey(e.target.value)}
+                                        placeholder="AIzaSy..." 
+                                        className="px-3 py-2 border rounded shadow-sm w-full md:w-64"
+                                    />
+                                    <button onClick={saveApiKey} className="bg-amber-600 text-white px-4 py-2 rounded font-semibold hover:bg-amber-700">Simpan</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <nav className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-10">
+                        <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h1 className="text-2xl font-bold text-indigo-700 flex items-center gap-2">
+                                    <IconCheckCircle /> EduGrader AI
+                                </h1>
+                                <p className="text-xs text-slate-500 mt-1 font-medium flex items-center gap-1">
+                                    <IconSchool /> {schoolInfo.name} • Tahun {schoolInfo.year} • Kelas {schoolInfo.grade}
+                                </p>
+                            </div>
+                            <div className="flex bg-slate-100 p-1 rounded-xl">
+                                <button onClick={() => setActiveTab('koreksi')} className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold ${activeTab === 'koreksi' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500'}`}>
+                                    <IconImage /> Koreksi Ujian
+                                </button>
+                                <button onClick={() => setActiveTab('database')} className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold ${activeTab === 'database' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500'}`}>
+                                    <IconDatabase /> Database Siswa
+                                </button>
+                                {!showApiInput && (
+                                    <button onClick={resetApiKey} className="ml-2 px-3 py-2 text-xs text-red-500 hover:bg-red-50 rounded">Ubah API</button>
+                                )}
+                            </div>
+                        </div>
+                    </nav>
+
+                    <div className="p-4 md:p-8 max-w-6xl mx-auto">
+                        {/* TAB KOREKSI */}
+                        {activeTab === 'koreksi' && (
+                            <div className="space-y-6 fade-in">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div className="space-y-6">
+                                        
+                                        {/* Data Siswa */}
+                                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                                            <label className="flex items-center gap-2 font-semibold text-slate-700 mb-4"><IconUser /> Data Koreksi</label>
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1"><IconBookOpen /> Mata Pelajaran</label>
+                                                    <select value={subject} onChange={(e) => setSubject(e.target.value)} className="w-full p-2.5 border rounded-xl bg-white">
+                                                        {subjectsList.map((item, idx) => <option key={idx} value={item}>{item}</option>)}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1"><IconUsers /> Pilih Siswa</label>
+                                                    <select value={selectedStudentNisn} onChange={(e) => setSelectedStudentNisn(e.target.value)} className="w-full p-2.5 border rounded-xl bg-white">
+                                                        <option value="" disabled>-- Pilih Nama Siswa --</option>
+                                                        {students.map((std, idx) => <option key={idx} value={std.nisn}>{std.name} (NISN: {std.nisn})</option>)}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Kunci Jawaban */}
+                                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                                            <label className="flex items-center gap-2 font-semibold text-slate-700 mb-2"><IconFileText /> Kunci Jawaban (Opsional)</label>
+                                            <textarea className="w-full h-28 p-3 border rounded-xl resize-none text-sm" placeholder="Contoh: 1. A, 2. B..." value={answerKey} onChange={(e) => setAnswerKey(e.target.value)} />
+                                        </div>
+
+                                        {/* Upload Foto */}
+                                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                                            <label className="flex items-center gap-2 font-semibold text-slate-700 mb-2"><IconImage /> Foto Jawaban Siswa</label>
+                                            <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={handleImageUpload} />
+                                            {!imagePreview ? (
+                                                <div onClick={triggerFileInput} className="w-full h-40 border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-slate-500 cursor-pointer hover:bg-slate-50">
+                                                    <IconUploadCloud />
+                                                    <span className="font-medium text-sm mt-2">Klik untuk mengunggah foto</span>
+                                                </div>
+                                            ) : (
+                                                <div className="relative w-full rounded-xl overflow-hidden group">
+                                                    <img src={imagePreview} className="w-full h-auto max-h-56 object-contain bg-slate-100" />
+                                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                                        <button onClick={triggerFileInput} className="bg-white text-slate-800 px-4 py-2 rounded-lg font-medium shadow-lg">Ganti Foto</button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <button onClick={gradeExam} disabled={loading || !base64Image || !selectedStudentNisn} className={`w-full py-3.5 rounded-xl font-bold text-white shadow-md flex items-center justify-center gap-2 ${loading || !base64Image || !selectedStudentNisn ? 'bg-slate-400' : 'bg-indigo-600 hover:bg-indigo-700'}`}>
+                                            {loading ? <><IconLoader2 /> Mengoreksi...</> : 'Koreksi Sekarang'}
+                                        </button>
+                                        
+                                        {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl flex items-start gap-3 border border-red-200"><IconAlertCircle /><p className="text-sm">{error}</p></div>}
+                                    </div>
+
+                                    {/* Hasil */}
+                                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 min-h-[400px]">
+                                        <h2 className="text-xl font-bold text-slate-800 mb-4 border-b pb-3">Hasil Koreksi AI</h2>
+                                        {loading ? (
+                                            <div className="h-64 flex flex-col items-center justify-center text-slate-400 space-y-4">
+                                                <IconLoader2 />
+                                                <p className="text-sm text-center">AI sedang membaca dan menilai...</p>
+                                            </div>
+                                        ) : result ? (
+                                            <div className="whitespace-pre-wrap font-medium text-slate-700 text-sm">{result}</div>
+                                        ) : (
+                                            <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
+                                                <IconCheckCircle />
+                                                <p className="text-sm mt-2">Hasil akan muncul di sini.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Tabel Rekap */}
+                                {records.length > 0 && (
+                                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mt-8">
+                                        <div className="flex justify-between items-center mb-4 border-b pb-4">
+                                            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2"><IconTable /> Rekap Nilai</h2>
+                                            <button onClick={downloadExcel} className="bg-emerald-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 text-sm"><IconDownload /> Unduh CSV</button>
+                                        </div>
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-left border-collapse min-w-[700px]">
+                                                <thead>
+                                                    <tr className="bg-slate-50 text-slate-600 text-sm border-b">
+                                                        <th className="p-3">Waktu</th>
+                                                        <th className="p-3">Mapel</th>
+                                                        <th className="p-3">NISN</th>
+                                                        <th className="p-3">Nama</th>
+                                                        <th className="p-3 text-center">Nilai</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {records.map((r) => (
+                                                        <tr key={r.id} className="border-b text-sm">
+                                                            <td className="p-3">{r.timestamp}</td>
+                                                            <td className="p-3 text-indigo-600 font-medium">{r.subject}</td>
+                                                            <td className="p-3">{r.studentId}</td>
+                                                            <td className="p-3">{r.studentName}</td>
+                                                            <td className="p-3 text-center font-bold">{r.score}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* TAB DATABASE */}
+                        {activeTab === 'database' && (
+                            <div className="space-y-6 fade-in">
+                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                                    <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3"><IconSchool /> Identitas Sekolah</h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div><label className="text-xs text-slate-500">Nama Sekolah</label><input type="text" className="w-full p-2.5 border rounded-xl text-sm" value={schoolInfo.name} onChange={e => setSchoolInfo({...schoolInfo, name: e.target.value})} /></div>
+                                        <div><label className="text-xs text-slate-500">Tahun Pelajaran</label><input type="text" className="w-full p-2.5 border rounded-xl text-sm" value={schoolInfo.year} onChange={e => setSchoolInfo({...schoolInfo, year: e.target.value})} /></div>
+                                        <div><label className="text-xs text-slate-500">Kelas</label><input type="text" className="w-full p-2.5 border rounded-xl text-sm" value={schoolInfo.grade} onChange={e => setSchoolInfo({...schoolInfo, grade: e.target.value})} /></div>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="md:col-span-1">
+                                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 sticky top-24">
+                                            <h2 className="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-3"><IconPlus /> Tambah Siswa</h2>
+                                            <form onSubmit={handleAddStudent} className="space-y-4">
+                                                <input type="text" required placeholder="NISN" className="w-full p-2.5 border rounded-xl text-sm" value={newStudent.nisn} onChange={e => setNewStudent({...newStudent, nisn: e.target.value})} />
+                                                <input type="text" required placeholder="Nama Lengkap" className="w-full p-2.5 border rounded-xl text-sm" value={newStudent.name} onChange={e => setNewStudent({...newStudent, name: e.target.value.toUpperCase()})} />
+                                                <select className="w-full p-2.5 border rounded-xl text-sm" value={newStudent.jk} onChange={e => setNewStudent({...newStudent, jk: e.target.value})}>
+                                                    <option value="L">Laki-Laki (L)</option><option value="P">Perempuan (P)</option>
+                                                </select>
+                                                <button type="submit" className="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-semibold">Simpan Data</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <div className="md:col-span-2 bg-white p-5 rounded-2xl shadow-sm border">
+                                        <h2 className="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-3"><IconDatabase /> Master Siswa ({students.length})</h2>
+                                        <div className="overflow-x-auto max-h-[600px]">
+                                            <table className="w-full text-left border-collapse">
+                                                <thead className="bg-slate-50 sticky top-0"><tr className="text-sm border-b"><th className="p-3">No</th><th className="p-3">NISN</th><th className="p-3">Nama Lengkap</th><th className="p-3 text-center">L/P</th></tr></thead>
+                                                <tbody>
+                                                    {students.map((std, idx) => (
+                                                        <tr key={idx} className="border-b text-sm"><td className="p-3">{idx + 1}</td><td className="p-3">{std.nisn}</td><td className="p-3 font-semibold">{std.name}</td><td className="p-3 text-center">{std.jk}</td></tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
-              </div>
-              
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
