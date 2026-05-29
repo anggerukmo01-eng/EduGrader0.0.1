@@ -147,7 +147,17 @@
           { nisn: '3194871087', name: 'YUSUF AFKA RIANSYAH', jk: 'L' }
         ];
 
-        const subjectsList = ['PPKn', 'Bahasa Indonesia', 'Matematika', 'Seni Rupa', 'Bahasa Jawa'];
+        const subjectsList = [
+            'Pendidikan Agama dan Budi Pekerti', 
+            'Pendidikan Pancasila', 
+            'Bahasa Indonesia', 
+            'Matematika', 
+            'Ilmu Pengetahuan Alam dan Sosial (IPAS)', 
+            'Pendidikan Jasmani Olahraga dan Kesehatan (PJOK)', 
+            'Seni dan Budaya', 
+            'Bahasa Inggris', 
+            'Muatan Lokal'
+        ];
 
         function App() {
             // State Inti
@@ -168,12 +178,12 @@
             const [students, setStudents] = useState(defaultStudents);
             const [records, setRecords] = useState([]);
             const [answerKeys, setAnswerKeys] = useState({
-                'PPKn': '', 'Bahasa Indonesia': '', 'Matematika': '', 'Seni Rupa': '', 'Bahasa Jawa': ''
+                'Pendidikan Agama dan Budi Pekerti': '', 'Pendidikan Pancasila': '', 'Bahasa Indonesia': '', 'Matematika': '', 'Ilmu Pengetahuan Alam dan Sosial (IPAS)': '', 'Pendidikan Jasmani Olahraga dan Kesehatan (PJOK)': '', 'Seni dan Budaya': '', 'Bahasa Inggris': '', 'Muatan Lokal': ''
             });
 
             // State Formulir
             const [newStudent, setNewStudent] = useState({ nisn: '', name: '', jk: 'L' });
-            const [subject, setSubject] = useState('PPKn');
+            const [subject, setSubject] = useState('Pendidikan Pancasila');
             const [selectedStudentNisn, setSelectedStudentNisn] = useState('');
             const [imagePreview, setImagePreview] = useState(null);
             const [base64Image, setBase64Image] = useState(null);
@@ -426,31 +436,32 @@ Tugas:
                                     </div>
 
                                     {/* Konten Hero */}
-                                    <div className="relative z-10 w-full p-8 md:p-14 flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12 text-white">
+                                    <div className="relative z-10 w-full p-6 sm:p-8 md:p-14 flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 text-white">
                                         <div className="shrink-0 relative">
                                             {/* Decorative ring behind logo */}
                                             <div className="absolute -inset-4 rounded-full bg-white/5 backdrop-blur-3xl animate-pulse"></div>
                                             {settings.logo ? (
-                                                <img src={settings.logo} alt="Logo" className="relative z-10 w-36 h-36 md:w-48 md:h-48 object-contain drop-shadow-2xl rounded-3xl" />
+                                                <img src={settings.logo} alt="Logo" className="relative z-10 w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 object-contain drop-shadow-2xl rounded-3xl" />
                                             ) : (
-                                                <div className="relative z-10 w-36 h-36 md:w-48 md:h-48 bg-white/10 backdrop-blur-xl rounded-[2rem] border border-white/20 flex items-center justify-center shadow-2xl">
+                                                <div className="relative z-10 w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 bg-white/10 backdrop-blur-xl rounded-[2rem] border border-white/20 flex items-center justify-center shadow-2xl">
                                                     <Icons.School />
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="text-center md:text-left space-y-5 pt-4">
+                                        <div className="text-center md:text-left space-y-4 pt-2 md:pt-4 w-full">
                                             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-bold tracking-widest text-blue-100 uppercase shadow-lg">
                                                 <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                                                 Tahun Pelajaran {settings.schoolYear}
                                             </div>
-                                            <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-tight drop-shadow-lg bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
+                                            {/* Teks tidak lagi terpotong: menggunakan break-words, menyesuaikan ukuran font, dan mengganti kliping gradien dengan text-white solid */}
+                                            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-normal md:leading-snug drop-shadow-lg text-white break-words">
                                                 {settings.schoolName}
                                             </h2>
                                             <div className="space-y-1">
-                                                <p className="text-xl md:text-2xl text-blue-100/90 font-medium drop-shadow-md">
+                                                <p className="text-lg md:text-xl lg:text-2xl text-blue-100/90 font-medium drop-shadow-md">
                                                     Kelas {settings.grade}
                                                 </p>
-                                                <p className="text-lg text-slate-300 font-medium flex items-center justify-center md:justify-start gap-2">
+                                                <p className="text-base md:text-lg text-slate-200 font-medium flex items-center justify-center md:justify-start gap-2">
                                                     <Icons.User /> {settings.teacherName}
                                                 </p>
                                             </div>
