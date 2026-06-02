@@ -120,12 +120,12 @@
             Tablet: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><line x1="12" x2="12.01" y1="18" y2="18"/></svg>,
             Smartphone: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>,
             Plus: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
-            Check: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Check: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>,
+            AlertCircle: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         };
 
-        // KEAMANAN: API Key dikosongkan. JANGAN PERNAH menaruh API Key asli di dalam file yang akan diunggah ke GitHub.
-        // Pengguna harus memasukkannya via menu Pengaturan, dan akan disimpan aman di Local Storage browser.
-        const defaultApiKey = ""; 
+        // Integrasi OpenAI API Key
+        const defaultApiKey = "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"; 
         
         const defaultStudents = [
           { nisn: '3186088743', name: 'ATHA ZAFRAN RAMADHAN', jk: 'L' },
@@ -167,7 +167,7 @@
             const [viewMode, setViewMode] = useState('desktop');
             const [isSettingsOpen, setIsSettingsOpen] = useState(false);
             
-            // State Pengaturan & Data - Dengan nama guru bawaan yang baru
+            // State Pengaturan & Data
             const [settings, setSettings] = useState({
                 apiKey: defaultApiKey,
                 schoolName: 'SD Negeri 1 Gerduren',
@@ -192,9 +192,10 @@
             const [mimeType, setMimeType] = useState(null);
             const [loading, setLoading] = useState(false);
             
-            // Modal Detail
+            // Modal Detail & Notifikasi
             const [selectedRecord, setSelectedRecord] = useState(null);
             const [toastMessage, setToastMessage] = useState('');
+            const [toastType, setToastType] = useState('success'); 
 
             const fileInputRef = useRef(null);
             const logoInputRef = useRef(null);
@@ -207,7 +208,12 @@
                 if (saved) {
                     try {
                         const parsed = JSON.parse(saved);
-                        if(parsed.settings) setSettings(parsed.settings);
+                        if (parsed.settings) {
+                            if (!parsed.settings.apiKey && defaultApiKey) {
+                                parsed.settings.apiKey = defaultApiKey;
+                            }
+                            setSettings(parsed.settings);
+                        }
                         if(parsed.students) setStudents(parsed.students);
                         if(parsed.records) setRecords(parsed.records);
                         if(parsed.answerKeys) setAnswerKeys(parsed.answerKeys);
@@ -220,9 +226,10 @@
                 localStorage.setItem('eduGraderData', JSON.stringify({ settings, students, records, answerKeys }));
             }, [settings, students, records, answerKeys]);
 
-            const showToast = (msg) => {
+            const showToast = (msg, type = 'success') => {
                 setToastMessage(msg);
-                setTimeout(() => setToastMessage(''), 3000);
+                setToastType(type);
+                setTimeout(() => setToastMessage(''), 4000);
             };
 
             const handleImageUpload = (e, type) => {
@@ -247,9 +254,17 @@
             const triggerFileInput = (ref) => ref.current && ref.current.click();
 
             const gradeExam = async () => {
-                if (!settings.apiKey) return showToast('Peringatan: API Key Gemini belum diatur di Pengaturan!');
-                if (!base64Image) return showToast('Unggah foto jawaban dahulu!');
-                if (!selectedStudentNisn) return showToast('Pilih siswa dahulu!');
+                if (!settings.apiKey) return showToast('Peringatan: API Key OpenAI belum diatur di Pengaturan!', 'error');
+                
+                // Validasi API Key OpenAI
+                if (!settings.apiKey.startsWith('sk-')) {
+                     showToast('Format API Key Salah! API Key OpenAI yang asli selalu diawali dengan "sk-". Silakan cek pengaturan Anda.', 'error');
+                     setIsSettingsOpen(true);
+                     return;
+                }
+                
+                if (!base64Image) return showToast('Unggah foto jawaban dahulu!', 'error');
+                if (!selectedStudentNisn) return showToast('Pilih siswa dahulu!', 'error');
 
                 setLoading(true);
                 const currentKey = answerKeys[subject] || "Gunakan standar kurikulum pendidikan dasar untuk menilai secara objektif berdasarkan penalaran yang logis.";
@@ -267,17 +282,46 @@ Tugas:
 5. Berikan Saran konstruktif dan menyemangati untuk siswa.`;
 
                 try {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${settings.apiKey}`;
+                    // Endpoint OpenAI API
+                    const url = 'https://api.openai.com/v1/chat/completions';
+                    
                     const payload = {
-                        contents: [{ role: "user", parts: [{ text: prompt }, { inlineData: { mimeType: mimeType || "image/jpeg", data: base64Image } }] }]
+                        model: "gpt-4o",
+                        messages: [
+                            {
+                                role: "user",
+                                content: [
+                                    { type: "text", text: prompt },
+                                    { 
+                                        type: "image_url", 
+                                        image_url: { 
+                                            url: `data:${mimeType || "image/jpeg"};base64,${base64Image}` 
+                                        } 
+                                    }
+                                ]
+                            }
+                        ],
+                        max_tokens: 1500
                     };
 
-                    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    if (!response.ok) throw new Error('API Error');
+                    const response = await fetch(url, { 
+                        method: 'POST', 
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.apiKey}`
+                        }, 
+                        body: JSON.stringify(payload) 
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        const errorMsg = errorData.error?.message || `HTTP Error ${response.status}`;
+                        throw new Error(errorMsg);
+                    }
                     
                     const data = await response.json();
-                    if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                        const textResp = data.candidates[0].content.parts[0].text;
+                    if (data?.choices?.[0]?.message?.content) {
+                        const textResp = data.choices[0].message.content;
                         const scoreMatch = textResp.match(/NILAI_AKHIR[^\d]*(\d+)/i);
                         const score = scoreMatch ? parseInt(scoreMatch[1], 10) : 0;
                         const student = students.find(s => s.nisn === selectedStudentNisn);
@@ -292,14 +336,16 @@ Tugas:
                             feedback: textResp.replace(/NILAI_AKHIR[^\n]*\n/i, '').trim()
                         };
                         setRecords([newRecord, ...records]);
-                        showToast('Koreksi berhasil disimpan ke Daftar Nilai!');
-                        // Reset image
+                        showToast('Koreksi berhasil disimpan ke Daftar Nilai!', 'success');
+                        
                         setImagePreview(null);
                         setBase64Image(null);
                         setSelectedStudentNisn('');
+                    } else {
+                        throw new Error('Respon dari AI tidak valid atau kosong.');
                     }
                 } catch (err) {
-                    showToast('Gagal terhubung ke AI. Periksa koneksi atau validitas API Key.');
+                    showToast(`Gagal terhubung ke AI: ${err.message}`, 'error');
                 } finally {
                     setLoading(false);
                 }
@@ -347,18 +393,16 @@ Tugas:
                         if(parsed.answerKeys) setAnswerKeys(parsed.answerKeys);
                         showToast('Data berhasil dipulihkan dari file backup!');
                     } catch (err) {
-                        showToast('Gagal memulihkan data. Format file tidak valid.');
+                        showToast('Gagal memulihkan data. Format file tidak valid.', 'error');
                     }
                 };
                 reader.readAsText(file);
-                // Reset input agar bisa pilih file yang sama berulang kali
                 e.target.value = null;
             };
 
             const renderWrapper = (children) => {
                 if (viewMode === 'desktop') return (
                     <div className="w-full min-h-screen bg-[#f8fafc] relative overflow-x-hidden">
-                        {/* Ambient Background Blur for Desktop */}
                         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-200/40 mix-blend-multiply filter blur-[100px] opacity-70 animate-blob pointer-events-none z-0"></div>
                         <div className="absolute top-[20%] right-[-10%] w-[30%] h-[50%] rounded-full bg-blue-200/40 mix-blend-multiply filter blur-[100px] opacity-70 animate-blob pointer-events-none animation-delay-2000 z-0"></div>
                         <div className="relative z-10 w-full min-h-screen flex flex-col">{children}</div>
@@ -368,14 +412,12 @@ Tugas:
                 const isTablet = viewMode === 'tablet';
                 return (
                     <div className="min-h-screen bg-slate-200 py-10 flex items-center justify-center relative overflow-hidden">
-                        {/* Simulator Ambient Background */}
                         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-300/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob pointer-events-none"></div>
                         
                         <div className={`relative bg-[#f8fafc] shadow-2xl overflow-hidden flex flex-col transition-all duration-500 ease-in-out
                             ${isTablet ? 'w-[834px] h-[1112px] max-h-[85vh] rounded-[2.5rem] border-[14px] border-slate-800 shadow-[0_0_0_1px_rgba(255,255,255,0.1)_inset,0_25px_50px_-12px_rgba(0,0,0,0.5)]' 
                                        : 'w-[390px] h-[844px] max-h-[85vh] rounded-[3rem] border-[14px] border-slate-800 shadow-[0_0_0_1px_rgba(255,255,255,0.1)_inset,0_25px_50px_-12px_rgba(0,0,0,0.5)]'}`}>
                             
-                            {/* Device Notch/Camera */}
                             <div className="absolute top-0 inset-x-0 flex justify-center z-50 pointer-events-none">
                                 {isTablet ? (
                                     <div className="h-4 w-4 rounded-full bg-slate-900 mt-2 flex items-center justify-center shadow-inner"><div className="h-1 w-1 rounded-full bg-blue-900/50"></div></div>
@@ -396,12 +438,13 @@ Tugas:
                 <>
                     {/* Toast Notification */}
                     {toastMessage && (
-                        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] bg-slate-800/95 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 fade-in border border-slate-700">
-                            <Icons.Check /> <span className="text-sm font-semibold tracking-wide">{toastMessage}</span>
+                        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[100] backdrop-blur-md text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 fade-in border ${toastType === 'error' ? 'bg-rose-600/95 border-rose-500' : 'bg-slate-800/95 border-slate-700'}`}>
+                            {toastType === 'error' ? <Icons.X /> : <Icons.Check />} 
+                            <span className="text-sm font-semibold tracking-wide">{toastMessage}</span>
                         </div>
                     )}
 
-                    {/* Navigation Bar - Modern Glassmorphism */}
+                    {/* Navigation Bar */}
                     <nav className="glass-panel sticky top-0 z-40 px-4 md:px-8 py-3 mx-0 md:mx-4 mt-0 md:mt-4 md:rounded-3xl flex flex-wrap items-center justify-between gap-4 transition-all">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200 text-white">
@@ -409,7 +452,7 @@ Tugas:
                             </div>
                             <div>
                                 <h1 className="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-800 to-blue-600 tracking-tight">EduGrader</h1>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">AI Powered</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">OpenAI Powered</p>
                             </div>
                         </div>
 
@@ -441,20 +484,20 @@ Tugas:
                     {/* Main Content Area */}
                     <main className="flex-1 p-4 md:p-8 w-full max-w-7xl mx-auto z-10 relative">
                         
-                        {/* Peringatan Keamanan API Key Kosong */}
-                        {!settings.apiKey && (
+                        {/* Peringatan Keamanan API Key Kosong atau Salah Format */}
+                        {(!settings.apiKey || !settings.apiKey.startsWith('sk-')) && (
                             <div className="mb-6 animate-in fade-in bg-rose-50 border border-rose-200 p-4 sm:p-5 rounded-[2rem] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center shrink-0">
-                                        <Icons.Settings />
+                                        <Icons.AlertCircle />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-rose-800 text-lg">API Key Belum Diatur</h3>
-                                        <p className="text-rose-600/80 text-sm font-medium">Sistem AI belum bisa digunakan. Harap masukkan API Key melalui pengaturan lokal (tidak akan terunggah ke server).</p>
+                                        <h3 className="font-bold text-rose-800 text-lg">Konfigurasi API Key Dibutuhkan</h3>
+                                        <p className="text-rose-600/80 text-sm font-medium">Anda harus menggunakan API Key dari OpenAI yang diawali dengan <b>"sk-"</b>.</p>
                                     </div>
                                 </div>
                                 <button onClick={() => setIsSettingsOpen(true)} className="w-full sm:w-auto px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition-all shadow-md active:scale-95 whitespace-nowrap">
-                                    Atur API Key
+                                    Perbarui API Key
                                 </button>
                             </div>
                         )}
@@ -462,9 +505,7 @@ Tugas:
                         {}
                         {activeTab === 'beranda' && (
                             <div className="animate-in fade-in space-y-8">
-                                {/* Hero Card - Ultra Modern */}
                                 <div className="relative w-full rounded-[2.5rem] overflow-hidden modern-shadow min-h-[420px] flex items-center group bg-slate-900">
-                                    {/* Latar Belakang Image / Gradient */}
                                     <div className="absolute inset-0 z-0">
                                         {settings.background ? (
                                             <>
@@ -478,10 +519,8 @@ Tugas:
                                         )}
                                     </div>
 
-                                    {/* Konten Hero */}
                                     <div className="relative z-10 w-full p-6 sm:p-8 md:p-14 flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 text-white">
                                         <div className="shrink-0 relative">
-                                            {/* Decorative ring behind logo */}
                                             <div className="absolute -inset-4 rounded-full bg-white/5 backdrop-blur-3xl animate-pulse"></div>
                                             {settings.logo ? (
                                                 <img src={settings.logo} alt="Logo" className="relative z-10 w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 object-contain drop-shadow-2xl rounded-3xl" />
@@ -496,7 +535,6 @@ Tugas:
                                                 <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                                                 Tahun Pelajaran {settings.schoolYear}
                                             </div>
-                                            {/* Teks tidak lagi terpotong: menggunakan break-words, menyesuaikan ukuran font, dan mengganti kliping gradien dengan text-white solid */}
                                             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-normal md:leading-snug drop-shadow-lg text-white break-words">
                                                 {settings.schoolName}
                                             </h2>
@@ -512,7 +550,6 @@ Tugas:
                                     </div>
                                 </div>
 
-                                {/* Stats Cards */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div className="modern-card p-6 rounded-[2rem] flex items-center gap-5">
                                         <div className="p-4 bg-blue-50 text-blue-600 rounded-2xl"><Icons.Users /></div>
@@ -535,7 +572,6 @@ Tugas:
                             <div className="animate-in fade-in">
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                                     
-                                    {/* Panel Kiri: Input */}
                                     <div className="lg:col-span-5 space-y-6">
                                         <div className="modern-card p-6 rounded-[2rem]">
                                             <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800"><Icons.User /> Pengaturan Koreksi</h3>
@@ -570,7 +606,6 @@ Tugas:
                                         </div>
                                     </div>
 
-                                    {/* Panel Kanan: Upload & Aksi */}
                                     <div className="lg:col-span-7 space-y-6">
                                         <div className="modern-card p-6 rounded-[2rem] h-full flex flex-col">
                                             <div className="flex justify-between items-center mb-6">
@@ -598,7 +633,7 @@ Tugas:
                                                 className={`mt-6 w-full py-4 rounded-2xl font-bold text-white transition-all duration-300 flex items-center justify-center gap-2 text-lg
                                                     ${loading || !base64Image || !selectedStudentNisn ? 'bg-slate-300 cursor-not-allowed' : 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:-translate-y-1 hover:shadow-[0_10px_20px_-10px_rgba(79,70,229,0.5)] active:scale-[0.98]'}`}
                                             >
-                                                {loading ? <><Icons.Loader2 /> Sedang Menganalisis dengan AI...</> : 'Koreksi Otomatis Sekarang'}
+                                                {loading ? <><Icons.Loader2 /> Sedang Menganalisis dengan OpenAI...</> : 'Koreksi Otomatis Sekarang'}
                                             </button>
                                         </div>
                                     </div>
@@ -743,7 +778,12 @@ Tugas:
                                     
                                     <section>
                                         <h3 className="text-xs font-black text-indigo-500 uppercase tracking-widest mb-4">Keamanan & Pencadangan</h3>
-                                        <div><label className="block text-xs font-bold text-slate-500 mb-1.5">Gemini API Key</label><input type="password" value={settings.apiKey} onChange={e => setSettings({...settings, apiKey: e.target.value})} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none transition-all" /></div>
+                                        
+                                        <div className="bg-indigo-50 border border-indigo-200 p-4 rounded-xl mb-4 text-xs font-medium text-indigo-800">
+                                            Sistem ini menggunakan OpenAI API (ChatGPT). Jika API Key tidak berfungsi, Anda bisa membuat atau memeriksa kuota di <a href="https://platform.openai.com/api-keys" target="_blank" className="font-bold underline text-indigo-600">Platform OpenAI</a>. (Format yang benar: sk-...)
+                                        </div>
+
+                                        <div><label className="block text-xs font-bold text-slate-500 mb-1.5">OpenAI API Key</label><input type="password" value={settings.apiKey} onChange={e => setSettings({...settings, apiKey: e.target.value})} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none transition-all" /></div>
                                         
                                         <div className="flex flex-col sm:flex-row gap-4 mt-5">
                                             <button onClick={backupData} className="flex-1 p-4 bg-slate-800 text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-slate-900 transition-all active:scale-[0.98]"><Icons.Download /> Unduh Backup</button>
@@ -754,7 +794,6 @@ Tugas:
                                     </section>
                                 </div>
                                 
-                                {/* Tombol Simpan Pengaturan */}
                                 <div className="bg-white/90 backdrop-blur-md px-8 py-5 border-t border-slate-100 flex justify-end gap-4 z-10">
                                     <button onClick={() => setIsSettingsOpen(false)} className="px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-100 transition-colors">Batal</button>
                                     <button 
