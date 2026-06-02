@@ -123,7 +123,9 @@
             Check: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
         };
 
-        const defaultApiKey = "AIzaSyBEyhGHnkHK4p3ciSLG9VUowrncmk8LlJU";
+        // KEAMANAN: API Key dikosongkan. JANGAN PERNAH menaruh API Key asli di dalam file yang akan diunggah ke GitHub.
+        // Pengguna harus memasukkannya via menu Pengaturan, dan akan disimpan aman di Local Storage browser.
+        const defaultApiKey = ""; 
         
         const defaultStudents = [
           { nisn: '3186088743', name: 'ATHA ZAFRAN RAMADHAN', jk: 'L' },
@@ -245,6 +247,7 @@
             const triggerFileInput = (ref) => ref.current && ref.current.click();
 
             const gradeExam = async () => {
+                if (!settings.apiKey) return showToast('Peringatan: API Key Gemini belum diatur di Pengaturan!');
                 if (!base64Image) return showToast('Unggah foto jawaban dahulu!');
                 if (!selectedStudentNisn) return showToast('Pilih siswa dahulu!');
 
@@ -438,6 +441,24 @@ Tugas:
                     {/* Main Content Area */}
                     <main className="flex-1 p-4 md:p-8 w-full max-w-7xl mx-auto z-10 relative">
                         
+                        {/* Peringatan Keamanan API Key Kosong */}
+                        {!settings.apiKey && (
+                            <div className="mb-6 animate-in fade-in bg-rose-50 border border-rose-200 p-4 sm:p-5 rounded-[2rem] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center shrink-0">
+                                        <Icons.Settings />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-rose-800 text-lg">API Key Belum Diatur</h3>
+                                        <p className="text-rose-600/80 text-sm font-medium">Sistem AI belum bisa digunakan. Harap masukkan API Key melalui pengaturan lokal (tidak akan terunggah ke server).</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setIsSettingsOpen(true)} className="w-full sm:w-auto px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition-all shadow-md active:scale-95 whitespace-nowrap">
+                                    Atur API Key
+                                </button>
+                            </div>
+                        )}
+
                         {}
                         {activeTab === 'beranda' && (
                             <div className="animate-in fade-in space-y-8">
