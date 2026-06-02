@@ -125,7 +125,7 @@
         };
 
         // Integrasi OpenAI API Key
-        const defaultApiKey = "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"; 
+        const defaultApiKey = "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"; 
         
         const defaultStudents = [
           { nisn: '3186088743', name: 'ATHA ZAFRAN RAMADHAN', jk: 'L' },
@@ -209,7 +209,8 @@
                     try {
                         const parsed = JSON.parse(saved);
                         if (parsed.settings) {
-                            if (!parsed.settings.apiKey && defaultApiKey) {
+                            // Memaksa pembaruan jika memori masih menyimpan API Key OpenAI yang lama atau kosong
+                            if (!parsed.settings.apiKey || parsed.settings.apiKey.startsWith('sk-proj-h77ag')) {
                                 parsed.settings.apiKey = defaultApiKey;
                             }
                             setSettings(parsed.settings);
